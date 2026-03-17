@@ -1,5 +1,66 @@
 .home {
     position: relative;
-    width: 100%;
-    height: 100%;
+}
+
+.homeIcons {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: default;
+    user-select: none;
+}
+
+/* scanlines */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+
+    background:
+        linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg,
+            rgba(255, 0, 0, 0.06),
+            rgba(0, 255, 0, 0.02),
+            rgba(0, 0, 255, 0.06));
+
+    background-size: 100% 2px, 3px 100%;
+}
+
+/* screen flicker */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    background: rgba(18, 16, 16, 0.1);
+    animation: crt-flicker 0.01s infinite;
+}
+
+@keyframes crt-flicker {
+    0% {
+        opacity: 0.1;
+    }
+
+    25% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 0.05;
+    }
+
+    75% {
+        opacity: 0.15;
+    }
+
+    100% {
+        opacity: 0.1;
+    }
 }
