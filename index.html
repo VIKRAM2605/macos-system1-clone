@@ -7,19 +7,55 @@
     <title>System 1</title>
     <link rel="stylesheet" href="https://unpkg.com/@sakun/system.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="index.css">
 </head>
 
-<body class="h-screen">
-    <div class="fixed window">
-        <div class="title-bar">
-            <button class="close"></button>
-            <h1 class="title">Window with stuff</h1>
-            <button class="resize"></button>
-
-        </div>
-        <div class="separator"></div>
-        <div class="window-pane">
-            stuff
+<body class="font-['Chicago'] text-black h-screen w-screen flex flex-col">
+    <!-- navbar -->
+    <nav class="bg-white w-screen h-10 px-5 flex justify-between items-center pl-5 pr-5 shadow-[0_2px_0_0_#000]">
+        <ul role="menu-bar" class="flex items-center gap-4 text-lg! h-fit">
+            <li>
+                <img src="assets/icons/apple-icon.svg" alt="Apple Icon" width="16" height="16" class="cursor-default">
+            </li>
+            <li role="menu-item" tabindex="0" aria-haspopup="true">
+                File
+                <ul role="menu">
+                    <li role="menu-item"><a href="#menu">Action</a></li>
+                </ul>
+            </li>
+            <li role="menu-item" tabindex="0" aria-haspopup="true">
+                Edit
+                <ul role="menu">
+                    <li role="menu-item"><a href="#menu">Action</a></li>
+                </ul>
+            </li>
+            <li role="menu-item" tabindex="0" aria-haspopup="true">
+                View
+                <ul role="menu">
+                    <li role="menu-item"><a href="#menu">Action</a></li>
+                </ul>
+            </li>
+            <li role="menu-item" tabindex="0" aria-haspopup="true">
+                Special
+                <ul role="menu">
+                    <li role="menu-item"><a href="#menu">You</a></li>
+                </ul>
+            </li>
+        </ul>
+        <ul role="menu-bar">
+            <li id="clock" class="text-lg!"></li>
+        </ul>
+    </nav>
+    <!-- homePage with icons -->
+    <div class="home pt-8 p-2">
+        <div id="trash" class="flex flex-col justify-center items-center w-fit gap-y-1" draggable="true">
+            <div class="">
+                <img src="assets/icons/trash.svg" alt="trash" width="24" height="24" draggable="false">
+            </div>
+            <div>
+                <p class="text-sm! w-fit font-normal bg-white text-black ">Trash</p>
+            </div>
         </div>
     </div>
 </body>
