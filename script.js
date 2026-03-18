@@ -63,14 +63,6 @@ function init() {
         win.style.display = "none";
         dragElementWindows(win);
     });
-    // to make all close buttons works to close the window
-    document.querySelectorAll(".close").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            const win = e.target.closest(".window");
-            win.style.display = "none";
-        })
-
-    });
 
     // to resize the window to either full or the default one
     document.querySelectorAll(".resize").forEach(btn => {
@@ -102,6 +94,18 @@ function init() {
                 win.style.margin = '0';
             }
         });
+
+        // to make all close buttons works to close the window
+        document.querySelectorAll(".close").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const win = e.target.closest(".window");
+                win.style.display = "none";
+                win.style.top = win.dataset.top;
+                win.style.left = win.dataset.left;
+                win.style.width = win.dataset.width;
+                win.style.height = win.dataset.height;
+            })
+        });
     });
 
     // double clicking the window will open the window fixed pos but can drag around
@@ -129,7 +133,7 @@ function dragElementWindows(element) {
     // Step 6: Define the `startDragging` function to capture the initial mouse position and set up event listeners.
     function startDragging(e) {
         // e = e || window.event;
-        if(e.target.closest('button')) return;
+        if (e.target.closest('button')) return;
 
         e.preventDefault();
         // Step 7: Get the mouse cursor position at startup.
