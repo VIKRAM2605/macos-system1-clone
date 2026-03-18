@@ -48,8 +48,8 @@
         </ul>
     </nav>
     <!-- homePage with icons -->
-    <div class="home mt-8">
-        <div id="trash-icon" class="homeIcons" style="grid-column:1; grid-row: 1;">
+    <div class="home mt-2 flex-1  ">
+        <div id="trash-icon" class="homeIcons">
             <div class="">
                 <img src="assets/icons/trash.svg" alt="trash" width="24" height="24" draggable="false">
             </div>
@@ -57,7 +57,7 @@
                 <p class="text-sm! w-fit font-normal bg-white text-black ">Trash</p>
             </div>
         </div>
-        <div id="system-folder-icon" class="homeIcons" style="grid-column: 1; grid-row: 2;">
+        <div id="system-folder-icon" class="homeIcons">
             <div>
                 <img src="assets/icons/mac-system-icon.svg" alt="system folder" width="24" height="24"
                     draggable="false">
@@ -69,7 +69,7 @@
     </div>
 
     <!-- the modal for opening for the icons  -->
-    <div class="window w-64 h-48 z-10" id="system-folder" style="display: none;">
+    <div class="fixed window w-64 h-48 z-10" id="system-folder" style="display: none;">
         <div class="title-bar">
             <button aria-label="Close" class="close"></button>
             <h1 class="title">System</h1>

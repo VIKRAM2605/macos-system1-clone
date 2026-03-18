@@ -1,11 +1,35 @@
-const grid = 64;
-
 // Make the DIV element draggable:
 // dragElement(document.getElementById("mydiv"));
+const homeRect = document.querySelector(".home").getBoundingClientRect();
+const iconSize = 64;
+
+const iconsPerCol = Math.floor(homeRect.height / iconSize);
+
+let row = 0;
+let col = 0;
 
 document.querySelectorAll('.homeIcons').forEach((element) => {
     // e.stopPropagation();
     // console.log(element)
+
+    const rect = element.getBoundingClientRect();
+    element.style.position = 'absolute';
+    element.style.left = (col * iconSize) + 'px';
+    element.style.top = (row * iconSize) + 'px';
+
+    row++;
+    if(row >=iconsPerCol){
+        row = 0;
+        col++;
+    }
+
+    const beforeElement = document.createElement('div');
+    beforeElement.style.width = rect.width + 'px';
+    beforeElement.style.height = rect.height + 'px';
+    beforeElement.style.visibility = "hidden";
+
+    element.parentNode.insertBefore(beforeElement, element);
+
     element.addEventListener('click', (event) => {
         event.stopPropagation();
         document.querySelectorAll('.homeIcons').forEach((element) => {
@@ -50,16 +74,32 @@ function dragElement(element) {
     function dragging(e) {
         e = e || window.event;
         e.preventDefault();
+
+        const parentRect = document.querySelector(".home").getBoundingClientRect();
+        const childRect = element.getBoundingClientRect();
+
+        console.log('parentRect:', parentRect);
+        console.log('childRect:', childRect);
+        console.log('Y range:', parentRect.top, '→', parentRect.bottom - childRect.height);
+
         // Step 10: Calculate the new cursor position.
         currentX = initialX - e.clientX;
         currentY = initialY - e.clientY;
+
         initialX = e.clientX;
         initialY = e.clientY;
+
+        let newX = parseFloat(element.style.left) - currentX;
+        let newY = parseFloat(element.style.top) - currentY;
+
+        newX = Math.max(0, Math.min(newX, parentRect.width - childRect.width));
+        newY = Math.max(0, Math.min(newY, parentRect.height - childRect.height));
+
         // Step 11: Update the element's new position by modifying its `top` and `left` CSS properties.
         element.style.filter = 'invert(1)';
-        element.style.position = 'fixed';
-        element.style.top = (element.offsetTop - currentY) + "px";
-        element.style.left = (element.offsetLeft - currentX) + "px";
+        element.style.position = 'absolute';
+        element.style.top = (newY) + "px";
+        element.style.left = (newX) + "px";
     }
 
     // Step 12: Define the `stopDragging` function to stop tracking mouse movement by removing the event listeners.
