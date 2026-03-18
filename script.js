@@ -1,7 +1,7 @@
 // Make the DIV element draggable:
 // dragElement(document.getElementById("mydiv"));
 const homeRect = document.querySelector(".home").getBoundingClientRect();
-const iconSize = 64;
+const iconSize = 68;
 
 const iconsPerCol = Math.floor(homeRect.height / iconSize);
 
@@ -9,8 +9,6 @@ let row = 0;
 let col = 0;
 
 document.querySelectorAll('.homeIcons').forEach((element) => {
-    // e.stopPropagation();
-    // console.log(element)
 
     const rect = element.getBoundingClientRect();
     element.style.position = 'absolute';
@@ -18,7 +16,7 @@ document.querySelectorAll('.homeIcons').forEach((element) => {
     element.style.top = (row * iconSize) + 'px';
 
     row++;
-    if(row >=iconsPerCol){
+    if (row >= iconsPerCol) {
         row = 0;
         col++;
     }
@@ -38,7 +36,7 @@ document.querySelectorAll('.homeIcons').forEach((element) => {
         element.style.filter = 'invert(1)';
     })
     dragElement(element)
-})
+});
 
 document.body.addEventListener('click', (e) => {
     if (!e.target.closest('.homeIcons')) {
@@ -46,7 +44,19 @@ document.body.addEventListener('click', (e) => {
             element.style.filter = '';
         })
     }
-})
+});
+
+document.querySelectorAll(".window").forEach(win => {
+
+    win.style.visibility = "hidden";
+    win.style.display = "block";
+
+    win.style.top = (window.innerHeight / 2) - (win.offsetHeight / 2) + 'px';
+    win.style.left = (window.innerWidth / 2) - (win.offsetWidth / 2) + 'px';
+
+    win.style.visibility = "";
+    win.style.display = "none";
+});
 
 // Step 1: Define a function called `dragElement` that makes an HTML element draggable.
 function dragElement(element) {
@@ -108,7 +118,7 @@ function dragElement(element) {
         document.onmouseup = null;
         document.onmousemove = null;
     }
-}
+};
 
 
 function updateTime() {
@@ -118,17 +128,47 @@ function updateTime() {
         minute: '2-digit'
     });
     document.getElementById("clock").textContent = time;
-}
+};
 
 // to make all close buttons works to close the window
 document.querySelectorAll(".close").forEach(btn => {
     btn.addEventListener("click", (e) => {
-        const window = e.target.closest(".window");
-        window.style.display = "none";
+        const win = e.target.closest(".window");
+        win.style.display = "none";
     })
 
 });
 
+document.querySelectorAll(".resize").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+        const win = e.target.closest(".window");
+
+        if (win.dataset.full === "true") {
+            win.style.width = win.dataset.width;
+            win.style.height = win.dataset.height;
+            win.style.top = win.dataset.top;
+            win.style.left = win.dataset.left;
+
+            win.dataset.full = "false";
+
+            win.style.margin = '';
+        } else {
+            win.dataset.width = win.style.width;
+            win.dataset.height = win.style.height;
+            win.dataset.top = win.style.top;
+            win.dataset.left = win.style.left;
+
+            win.style.width = homeRect.width + 'px';
+            win.style.height = homeRect.height + 'px';
+            win.style.top = homeRect.top + 'px';
+            win.style.left = homeRect.left + 'px';
+
+            win.dataset.full = "true";
+
+            win.style.margin = '0';
+        }
+    });
+});
 
 document.querySelectorAll(".homeIcons").forEach(btn => {
     btn.addEventListener("dblclick", (e) => {
@@ -140,7 +180,7 @@ document.querySelectorAll(".homeIcons").forEach(btn => {
             windowDiv.style.display = "block";
         }
     })
-})
+});
 
 updateTime();
 setInterval(updateTime, 1000);
