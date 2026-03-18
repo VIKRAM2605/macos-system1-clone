@@ -12,73 +12,84 @@
 </head>
 
 <body class="font-['Chicago'] text-black h-screen w-screen flex flex-col">
-    <!-- navbar -->
-    <nav class="bg-white w-screen h-10 px-5 flex justify-between items-center pl-5 pr-5 shadow-[0_2px_0_0_#000]">
-        <ul role="menu-bar" class="flex items-center gap-4 text-lg! h-fit">
-            <li>
-                <img src="assets/icons/apple-icon.svg" alt="Apple Icon" width="16" height="16" class="cursor-default">
-            </li>
-            <li role="menu-item" tabindex="0" aria-haspopup="true">
-                File
-                <ul role="menu">
-                    <li role="menu-item"><a href="#menu">Action</a></li>
-                </ul>
-            </li>
-            <li role="menu-item" tabindex="0" aria-haspopup="true">
-                Edit
-                <ul role="menu">
-                    <li role="menu-item"><a href="#menu">Action</a></li>
-                </ul>
-            </li>
-            <li role="menu-item" tabindex="0" aria-haspopup="true">
-                View
-                <ul role="menu">
-                    <li role="menu-item"><a href="#menu">Action</a></li>
-                </ul>
-            </li>
-            <li role="menu-item" tabindex="0" aria-haspopup="true">
-                Special
-                <ul role="menu">
-                    <li role="menu-item"><a href="#menu">Vikram Suresh</a></li>
-                </ul>
-            </li>
-        </ul>
-        <ul role="menu-bar">
-            <li id="clock" class="text-lg!"></li>
-        </ul>
-    </nav>
-    <!-- homePage with icons -->
-    <div class="home flex-1  ">
-        <div id="trash-icon" class="homeIcons">
-            <div class="">
-                <img src="assets/icons/trash.svg" alt="trash" width="24" height="24" draggable="false">
-            </div>
-            <div>
-                <p class="text-sm! w-fit font-normal bg-white text-black ">Trash</p>
-            </div>
+    <!-- loading animation -->
+    <div class="loading-animation w-full h-full">
+        <div class="mac-alone flex justify-center items-center w-full h-full">
+            <img src="assets/icons/happy-mac-icon.svg" alt="Happy Mac" width="64" height="64">
         </div>
-        <div id="system-folder-icon" class="homeIcons">
-            <div>
-                <img src="assets/icons/mac-system-icon.svg" alt="system folder" width="24" height="24"
-                    draggable="false">
-            </div>
-            <div>
-                <p class="text-sm! w-fit font-normal bg-white text-black">System</p>
-            </div>
+        <div class="welcome-animation flex justify-center items-center w-full h-full" style="display: none;">
+            <img src="assets/loading/untitled.png" alt="" width="800" height="800">
         </div>
     </div>
-
-    <!-- the modal for opening for the icons  -->
-    <div class="window fixed w-64 h-48 z-10" id="system-folder" style="display: none;">
-        <div class="title-bar">
-            <button aria-label="Close" class="close"></button>
-            <h1 class="title">System</h1>
-            <button aria-label="Resize" class="resize"></button>
+    <div class="after-loading w-full flex-1 flex flex-col" style="display: none;">
+        <!-- navbar -->
+        <nav class="bg-white w-full h-10 px-5 shrink-0 flex justify-between items-center pl-5 pr-5 shadow-[0_2px_0_0_#000]">
+            <ul role="menu-bar" class="flex items-center gap-4 text-lg! h-fit">
+                <li>
+                    <img src="assets/icons/apple-icon.svg" alt="Apple Icon" width="16" height="16"
+                        class="cursor-default">
+                </li>
+                <li role="menu-item" tabindex="0" aria-haspopup="true">
+                    File
+                    <ul role="menu">
+                        <li role="menu-item"><a href="#menu">Action</a></li>
+                    </ul>
+                </li>
+                <li role="menu-item" tabindex="0" aria-haspopup="true">
+                    Edit
+                    <ul role="menu">
+                        <li role="menu-item"><a href="#menu">Action</a></li>
+                    </ul>
+                </li>
+                <li role="menu-item" tabindex="0" aria-haspopup="true">
+                    View
+                    <ul role="menu">
+                        <li role="menu-item"><a href="#menu">Action</a></li>
+                    </ul>
+                </li>
+                <li role="menu-item" tabindex="0" aria-haspopup="true">
+                    Special
+                    <ul role="menu">
+                        <li role="menu-item"><a href="#menu">Vikram Suresh</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <ul role="menu-bar">
+                <li id="clock" class="text-lg!"></li>
+            </ul>
+        </nav>
+        <!-- homePage with icons -->
+        <div class="home mb-1 flex-1 ">
+            <div id="trash-icon" class="homeIcons">
+                <div class="">
+                    <img src="assets/icons/trash.svg" alt="trash" width="24" height="24" draggable="false">
+                </div>
+                <div>
+                    <p class="text-sm! w-fit font-normal bg-white text-black ">Trash</p>
+                </div>
+            </div>
+            <div id="system-folder-icon" class="homeIcons">
+                <div>
+                    <img src="assets/icons/mac-system-icon.svg" alt="system folder" width="24" height="24"
+                        draggable="false">
+                </div>
+                <div>
+                    <p class="text-sm! w-fit font-normal bg-white text-black">System</p>
+                </div>
+            </div>
         </div>
-        <div class="separator"></div>
+        <!-- the modal for opening for the icons  -->
+        <div class="window fixed w-64 h-48 z-10" id="system-folder" style="display: none;">
+            <div class="title-bar">
+                <button aria-label="Close" class="close"></button>
+                <h1 class="title">System</h1>
+                <button aria-label="Resize" class="resize"></button>
+            </div>
+            <div class="separator"></div>
 
-        <div class="window-pane">
-            Woo I got stuff in me!
+            <div class="window-pane">
+                Woo I got stuff in me!
+            </div>
         </div>
     </div>
 </body>
