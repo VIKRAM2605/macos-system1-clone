@@ -34,7 +34,8 @@
                 <li role="menu-item" tabindex="0" aria-haspopup="true">
                     File
                     <ul role="menu">
-                        <li role="menu-item"><a href="#menu">Action</a></li>
+                        <li role="menu-item"><button id="open">Open</button></li>
+                        <li role="menu-item"><button id="new">New</button></li>
                     </ul>
                 </li>
                 <li role="menu-item" tabindex="0" aria-haspopup="true">
@@ -91,6 +92,65 @@
 
             <div class="window-pane">
                 Woo I got stuff in me!
+            </div>
+        </div>
+        <div class="window fixed w-64 h-48 z-10" id="open-folder" style="display: none;">
+            <div class="title-bar">
+                <button aria-label="Close" class="close"></button>
+                <h1 class="title">Open</h1>
+                <button aria-label="Resize" class="resize"></button>
+            </div>
+            <div class="separator"></div>
+
+            <div class="window-pane">
+                Woo I got stuff in me!
+            </div>
+        </div>
+        <!-- <div class="window fixed w-64 h-48 z-10" id="new-folder" style="display: none;">
+            <div class="title-bar">
+                <button aria-label="Close" class="close"></button>
+                <h1 class="title">Open</h1>
+                <button aria-label="Resize" class="resize"></button>
+            </div>
+            <div class="separator"></div>
+
+            <div class="window-pane">
+                Woo I got stuff in me!
+            </div>
+        </div> -->
+        <div class="window scale-down fixed w-64 h-fit p-1 z-10" style="display: none;" id="new-folder">
+            <div class="title-bar">
+                <button aria-label="Close" class="close"></button>
+                <h1 class="title">New File</h1>
+                <button aria-label="Resize" disabled class="hidden"></button>
+            </div>
+            <div class="separator"></div>
+
+            <div class="modeless-dialog">
+                <section class="field-row" style="justify-content: flex-start">
+                    <label for="file-create" class="modeless-text">File-Name:</label>
+                    <input id="file-create" type="text" class="flex-1" placeholder="" />
+                </section>
+                <section class="field-row pt-5" style="justify-content: flex-end">
+                    <button class="btn" id="cancel">Cancel</button>
+                    <button class="btn" id="create" style="width:95px; ">Create</button>
+                </section>
+            </div>
+        </div>
+        <div class="alert-box h-fit! w-fit! fixed outer-border scale-down" style="display: none;">
+            <div class="inner-border">
+                <div class="alert-contents" style="padding-left: 30px; padding-right:20px;">
+                    <section class="field-row" style="justify-content: flex-start">
+                        <div class="square">
+                            <img src="assets/icons/alert-face-exclam.svg" alt="!" width="32" height="32">
+                        </div>
+                        <p class="alert-text text-xl!" id="alert-text" style="padding-left:10px;"></p>
+                    </section>
+                    <section class="field-row" style="justify-content: flex-end">
+                        <!-- <button class="btn" id="cancel">Cancel</button> -->
+                        <button class="btn" id="alert-okay">OK</button>
+                    </section>
+                </div>
             </div>
         </div>
     </div>

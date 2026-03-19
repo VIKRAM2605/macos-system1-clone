@@ -94,19 +94,68 @@ function init() {
                 win.style.margin = '0';
             }
         });
-
-        // to make all close buttons works to close the window
-        document.querySelectorAll(".close").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                const win = e.target.closest(".window");
-                win.style.display = "none";
+    });
+    // to make all close buttons works to close the window
+    document.querySelectorAll(".close").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            const win = e.target.closest(".window");
+            win.style.display = "none";
+            if (win.dataset.top) {
                 win.style.top = win.dataset.top;
                 win.style.left = win.dataset.left;
                 win.style.width = win.dataset.width;
                 win.style.height = win.dataset.height;
-            })
-        });
+            }
+        })
     });
+    // to make cancel m=btn close the window
+    document.querySelectorAll("#cancel").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            let win = e.target.closest(".window");
+            if (win) {
+                win.style.display = "none";
+                return;
+            }
+            win = e.target.closest(".alert-box");
+            if (win){
+                win.style.display = "none";
+                return;
+            } 
+        })
+    })
+
+    // to make submit btn works when clicked
+    document.querySelector('#create').addEventListener("click", (e) => {
+        const input = document.getElementById("file-create");
+        let value = input.value;
+
+        input.value = "";
+
+        if (value.trim() === "") {
+            const content = document.getElementById("alert-text");
+            content.textContent = "Sorry, enter some NAME to create a file.";
+
+            const alertBox = document.querySelector(".alert-box"); 
+            alertBox.style.visibility = "hidden";
+            alertBox.style.display = "block";
+            alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
+            alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
+            alertBox.style.zIndex = "999";
+
+            alertBox.style.visibility = "";
+
+        } else {
+            document.querySelector("#create").closest(".window").style.display = "none";
+
+            console.log(value)
+        }
+    });
+
+    //ok button to work for alert box
+    document.querySelector("#alert-okay").addEventListener('click',(e)=>{
+        const alertBox = document.querySelector(".alert-box");
+        alertBox.style.display = "none";
+    })
 
     // double clicking the window will open the window fixed pos but can drag around
     document.querySelectorAll(".homeIcons").forEach(btn => {
@@ -128,12 +177,13 @@ function dragElementWindows(element) {
     var initialY = 0;
     var currentX = 0;
     var currentY = 0;
-    console.log(element)
+    //console.log(element)
 
     // Step 6: Define the `startDragging` function to capture the initial mouse position and set up event listeners.
     function startDragging(e) {
         // e = e || window.event;
         if (e.target.closest('button')) return;
+        if (e.target.closest('input')) return;
 
         e.preventDefault();
         // Step 7: Get the mouse cursor position at startup.
@@ -198,7 +248,7 @@ function dragElement(element) {
     var initialY = 0;
     var currentX = 0;
     var currentY = 0;
-    console.log(element)
+    //console.log(element)
 
     // Step 6: Define the `startDragging` function to capture the initial mouse position and set up event listeners.
     function startDragging(e) {
@@ -292,26 +342,43 @@ function fadeOut(element, duration = 500, onDone) {
 function playLoadingAnimationOnce() {
     happyMac.style.opacity = '0';
 
-    fadeIn(happyMac, 1500);
+    fadeIn(happyMac, 100);
 
     setTimeout(() => {
-        fadeOut(happyMac, 1500, () => {
+        fadeOut(happyMac, 100, () => {
             happyMac.style.display = 'none';
 
             welcome.style.display = 'flex';
             welcome.style.opacity = '0';
-            fadeIn(welcome, 1500);
+            fadeIn(welcome, 100);
 
             setTimeout(() => {
-                fadeOut(welcome, 1500, () => {
+                fadeOut(welcome, 100, () => {
                     welcome.style.display = 'none';
                     parentForAnimation.style.display = "none";
                     document.querySelector(".after-loading").style.display = "flex";
                     init();
                 });
-            }, 1500);
+            }, 100);
         });
-    }, 1500);
+    }, 100);
 }
 
 playLoadingAnimationOnce();
+
+document.getElementById("open").addEventListener('click', (e) => {
+    const win = document.getElementById("open-folder");
+    win.style.display = "block";
+    document.activeElement.blur();
+});
+
+document.getElementById("new").addEventListener('click', (e) => {
+    const win = document.getElementById("new-folder");
+    win.style.display = "block";
+
+    document.activeElement.blur();
+
+    win.style.top = (window.innerHeight / 2) - (win.offsetHeight / 2) + 'px';
+    win.style.left = (window.innerWidth / 2) - (win.offsetWidth / 2) + 'px';
+
+})
