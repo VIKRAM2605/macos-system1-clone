@@ -147,31 +147,24 @@ function init() {
     // to make submit btn works when clicked
     document.querySelector('#create').addEventListener("click", (e) => {
         const input = document.getElementById("file-create");
-        let value = input.value;
+        let value = input.value.trim();
+
+        if (value === "") {
+            alertBox("Sorry, Enter Some 'Name' To Create a File");
+            input.value = "";
+            return;
+        }
+
+        const fileExistingCheck = files.find(file => file.id === `${value}-file`);
+        if (fileExistingCheck) {
+            alertBox("File Already Exists.");
+            input.value = "";
+            return;
+        }
 
         input.value = "";
-
-        if (value.trim() === "") {
-            const content = document.getElementById("alert-text");
-            content.textContent = "Sorry, enter some NAME to create a file.";
-
-            const alertBox = document.querySelector(".alert-box");
-            alertBox.style.visibility = "hidden";
-            alertBox.style.setProperty('display', 'block', 'important');
-            alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
-            alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
-            alertBox.style.zIndex = "2000";
-
-            alertBox.style.visibility = "";
-
-        } else {
-            document.querySelector("#create").closest(".window").style.setProperty('display', 'none', 'important');
-
-            console.log(value);
-
-            createIcons("read-file-icon", "assets/icons/hypercard.svg", value)
-
-        }
+        createIcons(`${value}-file-icon`, "assets/icons/hypercard.svg", value);
+        createWindow(`${value}-file`, value, "true");
     });
 
     //ok button to work for alert box
@@ -436,7 +429,7 @@ document.getElementById("open").addEventListener('click', (e) => {
     document.activeElement.blur();
 });
 
-document.getElementById("new").addEventListener('click', (e) => {
+document.getElementById("new-file").addEventListener('click', (e) => {
     const win = document.getElementById("new-folder");
     win.style.setProperty('display', 'block', 'important');
 
@@ -493,7 +486,8 @@ function createIcons(id, iconSrc, label) {
         const winId = id.replace("-icon", "");
         const win = document.getElementById(winId);
         if (win) {
-            const displayMode = win.id === 'read-file' ? 'flex' : 'block';
+            const displayMode = win.id.includes('-file') ? 'flex' : 'block';
+            console.log(displayMode);
             win.style.setProperty('display', displayMode, 'important');
             win.style.margin = '0';
             const title = win.querySelector(".title");
@@ -549,7 +543,7 @@ document.getElementById("open-open").addEventListener("click", (e) => {
     const value = input.value.trim();
 
     if (value === "") {
-        alertBox("Enter some File/Folder Name.");
+        alertBox("Enter some File Name.");
         return;
     };
 
@@ -578,11 +572,94 @@ function alertBox(content) {
     alertText.textContent = content;
 
     alertBox.style.visibility = "hidden";
-    alertBox.style.setProperty("display","block","important");
+    alertBox.style.setProperty("display", "block", "important");
     alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
     alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
 
     alertBox.style.zIndex = '2000';
 
     alertBox.style.visibility = '';
+}
+
+function createWindow(id, name, editable = 'false') {
+    const div = document.createElement("div");
+    div.id = id;
+    div.className = "window fixed w-64 h-48 z-10 flex! flex-col! overflow-hidden!";
+    div.style.setProperty("display", "none", "important");
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "title-bar";
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "close";
+    closeBtn.setAttribute("aria-label", "Close");
+    const resizeBtn = document.createElement("button");
+    resizeBtn.className = "resize";
+    resizeBtn.setAttribute("aria-label", "Resize");
+    const titleH1 = document.createElement("h1");
+    titleH1.className = "title"
+    titleH1.textContent = name;
+
+    titleDiv.appendChild(closeBtn);
+    titleDiv.appendChild(titleH1);
+    titleDiv.appendChild(resizeBtn);
+
+    const seperatorDiv = document.createElement("div");
+    seperatorDiv.className = "separator";
+
+    const windowPane = document.createElement("div");
+    windowPane.className = "window-pane flex-1 overflow-y-auto! min-h-0";
+    windowPane.contentEditable = editable;
+
+    div.appendChild(titleDiv);
+    div.appendChild(seperatorDiv);
+    div.appendChild(windowPane);
+
+    document.querySelector(".after-loading").appendChild(div);
+
+    closeBtn.addEventListener("click", (e) => {
+        div.style.setProperty("display", "none", "important");
+        activeWindows = activeWindows.filter(winId => winId !== id);
+    });
+
+    resizeBtn.addEventListener("click", (e) => {
+        const win = e.target.closest(".window");
+        if (win.dataset.full === "true") {
+            win.style.width = win.dataset.width;
+            win.style.height = win.dataset.height;
+            win.style.top = win.dataset.top;
+            win.style.left = win.dataset.left;
+
+            win.style.margin = "0";
+
+            win.dataset.full = "false";
+        } else {
+
+            win.dataset.width = div.style.width;
+            win.dataset.height = div.style.height;
+            win.dataset.top = div.style.top;
+            win.dataset.left = div.style.left;
+
+            win.style.width = homeRect.width + "px";
+            win.style.height = homeRect.height + "px";
+            win.style.top = homeRect.top + "px";
+            win.style.left = homeRect.left + "px";
+
+            win.dataset.full = "true";
+
+            win.style.margin = "0";
+
+        }
+    })
+
+    div.addEventListener("click", () => {
+        if (div.style.display !== "none") bringWindowToTop(id);
+    })
+
+    div.style.visibility = "hidden";
+    div.style.setProperty("display", "block", "important");
+    div.style.top = (window.innerHeight / 2) - (div.offsetHeight / 2) + "px";
+    div.style.left = (window.innerWidth / 2) - (div.offsetWidth / 2) + "px";
+    div.style.setProperty("display", "none", "important");
+    div.style.visibility = "";
+
+    dragElementWindows(div);
 }
