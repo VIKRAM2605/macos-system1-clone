@@ -12,17 +12,17 @@
 </head>
 
 <body class="font-['Chicago'] text-black h-screen w-screen flex flex-col">
-    <!-- loading animation -->
+    <!-- animation made so when the page loads it plays it  -->
     <div class="loading-animation w-full h-full">
         <div class="mac-alone flex justify-center items-center w-full h-full">
             <img src="assets/icons/happy-mac-icon.svg" alt="Happy Mac" width="48" height="48">
         </div>
-        <div class="welcome-animation flex justify-center items-center w-full h-full" style="display: none;">
+        <div class="welcome-animation flex justify-center items-center w-full h-full" style="display: none !important;">
             <img src="assets/loading/Untitled.png" alt=""
                 style="max-width: 80%; max-height: 80vh; object-fit: contain;">
         </div>
     </div>
-    <div class="after-loading w-full flex-1 flex flex-col" style="display: none;">
+    <div class="after-loading w-full flex-1 flex flex-col" style="display: none !important;">
         <!-- navbar -->
         <nav
             class="bg-white w-full h-10 px-5 shrink-0 flex justify-between items-center pl-5 pr-5 shadow-[0_2px_0_0_#000]">
@@ -36,6 +36,9 @@
                     <ul role="menu">
                         <li role="menu-item"><button id="open">Open</button></li>
                         <li role="menu-item"><button id="new">New</button></li>
+                        <li role="menu-item"><button id="close-win">Close</button></li>
+                        <li role="menu-item"><button id="close-all-win">Close All</button></li>
+                        <li role="menu-item"><button id="print">Print</button></li>
                     </ul>
                 </li>
                 <li role="menu-item" tabindex="0" aria-haspopup="true">
@@ -68,7 +71,7 @@
                     <img src="assets/icons/trash.svg" alt="trash" width="24" height="24" draggable="false">
                 </div>
                 <div>
-                    <p class="text-sm! w-fit font-normal bg-white text-black ">Trash</p>
+                    <p class="text-sm! w-fit font-normal bg-white text-black" id="label">Trash</p>
                 </div>
             </div>
             <div id="system-folder-icon" class="homeIcons">
@@ -77,12 +80,12 @@
                         draggable="false">
                 </div>
                 <div>
-                    <p class="text-sm! w-fit font-normal bg-white text-black">System</p>
+                    <p class="text-sm! w-fit font-normal bg-white text-black" id="label">System</p>
                 </div>
             </div>
         </div>
         <!-- the modal for opening for the icons  -->
-        <div class="window fixed w-64 h-48 z-10" id="system-folder" style="display: none;">
+        <div class="window fixed w-64 h-48 z-10" id="system-folder" style="display: none !important;">
             <div class="title-bar">
                 <button aria-label="Close" class="close"></button>
                 <h1 class="title">System</h1>
@@ -94,7 +97,7 @@
                 Woo I got stuff in me!
             </div>
         </div>
-        <div class="window fixed w-64 h-48 z-10" id="open-folder" style="display: none;">
+        <div class="window fixed w-128 h-48 z-10" id="open-folder" style="display: none !important;">
             <div class="title-bar">
                 <button aria-label="Close" class="close"></button>
                 <h1 class="title">Open</h1>
@@ -102,23 +105,28 @@
             </div>
             <div class="separator"></div>
 
-            <div class="window-pane">
-                Woo I got stuff in me!
+            <div class="window-pane flex flex-row">
+                <section class="flex flex-col gap-y-3 w-1/2 border-r-2 border-solid pr-2 border-black" style="justify-content: flex-start;">
+                    <input aria-label="Example text box" type="text" placeholder="File Name" />
+                    <button class="btn shrink-0 flex-grow-0 w-fit" id="open-open">Open</button>
+                </section>
+                <section class="flex flex-col gap-y-1 flex-1 overflow-y-auto" id="file-list">
+                </section>
             </div>
         </div>
-        <!-- <div class="window fixed w-64 h-48 z-10" id="new-folder" style="display: none;">
+        <div class="window fixed w-64 h-48 z-10 flex! flex-col! overflow-hidden!" id="read-file"
+            style="display: none !important;">
             <div class="title-bar">
                 <button aria-label="Close" class="close"></button>
-                <h1 class="title">Open</h1>
+                <h1 class="title"></h1>
                 <button aria-label="Resize" class="resize"></button>
             </div>
             <div class="separator"></div>
 
-            <div class="window-pane">
-                Woo I got stuff in me!
+            <div class="window-pane flex-1 overflow-y-auto! min-h-0">
             </div>
-        </div> -->
-        <div class="window scale-down fixed w-64 h-fit p-1 z-10" style="display: none;" id="new-folder">
+        </div>
+        <div class="window scale-down fixed w-64 h-fit p-1 z-10" id="new-folder" style="display: none !important;">
             <div class="title-bar">
                 <button aria-label="Close" class="close"></button>
                 <h1 class="title">New File</h1>
@@ -137,7 +145,7 @@
                 </section>
             </div>
         </div>
-        <div class="alert-box h-fit! w-fit! fixed outer-border scale-down" style="display: none;">
+        <div class="alert-box h-fit! w-fit! fixed outer-border scale-down" style="display: none !important;">
             <div class="inner-border">
                 <div class="alert-contents" style="padding-left: 30px; padding-right:20px;">
                     <section class="field-row" style="justify-content: flex-start">
@@ -147,7 +155,6 @@
                         <p class="alert-text text-xl!" id="alert-text" style="padding-left:10px;"></p>
                     </section>
                     <section class="field-row" style="justify-content: flex-end">
-                        <!-- <button class="btn" id="cancel">Cancel</button> -->
                         <button class="btn" id="alert-okay">OK</button>
                     </section>
                 </div>

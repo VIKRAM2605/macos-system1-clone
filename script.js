@@ -6,6 +6,9 @@ let iconsPerCol;
 let row = 0;
 let col = 0;
 
+let activeWindows = [];
+let files = [];
+
 function init() {
     homeRect = document.querySelector(".home").getBoundingClientRect();
     iconsPerCol = Math.floor(homeRect.height / iconSize);
@@ -31,6 +34,12 @@ function init() {
 
         element.parentNode.insertBefore(beforeElement, element);
 
+        const fileId = element.id.replace("-icon", "");
+        const label = element.querySelector("#label").textContent;
+        const imgSrc = element.querySelector("img").src;
+
+        files.push({ id: fileId, label: label, iconSrc: imgSrc });
+
         element.addEventListener('click', (event) => {
             event.stopPropagation();
             document.querySelectorAll('.homeIcons').forEach((element) => {
@@ -54,15 +63,23 @@ function init() {
     document.querySelectorAll(".window").forEach(win => {
 
         win.style.visibility = "hidden";
-        win.style.display = "block";
+        win.style.setProperty('display', 'block', 'important');
 
         win.style.top = (window.innerHeight / 2) - (win.offsetHeight / 2) + 'px';
         win.style.left = (window.innerWidth / 2) - (win.offsetWidth / 2) + 'px';
 
         win.style.visibility = "";
-        win.style.display = "none";
+        win.style.setProperty('display', 'none', 'important');
         dragElementWindows(win);
     });
+    //to make click move the window top above all other window
+    document.querySelectorAll(".window").forEach(win => {
+        win.addEventListener("click", (e) => {
+            if (win.style.display !== 'none') {
+                bringWindowToTop(win.id);
+            }
+        })
+    })
 
     // to resize the window to either full or the default one
     document.querySelectorAll(".resize").forEach(btn => {
@@ -77,7 +94,7 @@ function init() {
 
                 win.dataset.full = "false";
 
-                win.style.margin = '';
+                win.style.margin = '0';
             } else {
                 win.dataset.width = win.style.width;
                 win.dataset.height = win.style.height;
@@ -99,13 +116,14 @@ function init() {
     document.querySelectorAll(".close").forEach(btn => {
         btn.addEventListener("click", (e) => {
             const win = e.target.closest(".window");
-            win.style.display = "none";
+            win.style.setProperty('display', 'none', 'important');
             if (win.dataset.top) {
                 win.style.top = win.dataset.top;
                 win.style.left = win.dataset.left;
                 win.style.width = win.dataset.width;
                 win.style.height = win.dataset.height;
             }
+            activeWindows = activeWindows.filter(id => id !== win.id);
         })
     });
     // to make cancel m=btn close the window
@@ -113,14 +131,16 @@ function init() {
         btn.addEventListener("click", (e) => {
             let win = e.target.closest(".window");
             if (win) {
-                win.style.display = "none";
+                win.style.setProperty('display', 'none', 'important');
+                activeWindows = activeWindows.filter(id => id !== win.id);
                 return;
             }
             win = e.target.closest(".alert-box");
-            if (win){
-                win.style.display = "none";
+            if (win) {
+                win.style.setProperty('display', 'none', 'important');
+                activeWindows = activeWindows.filter(id => id !== win.id);
                 return;
-            } 
+            }
         })
     })
 
@@ -135,9 +155,9 @@ function init() {
             const content = document.getElementById("alert-text");
             content.textContent = "Sorry, enter some NAME to create a file.";
 
-            const alertBox = document.querySelector(".alert-box"); 
+            const alertBox = document.querySelector(".alert-box");
             alertBox.style.visibility = "hidden";
-            alertBox.style.display = "block";
+            alertBox.style.setProperty('display', 'block', 'important');
             alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
             alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
             alertBox.style.zIndex = "999";
@@ -145,16 +165,19 @@ function init() {
             alertBox.style.visibility = "";
 
         } else {
-            document.querySelector("#create").closest(".window").style.display = "none";
+            document.querySelector("#create").closest(".window").style.setProperty('display', 'none', 'important');
 
-            console.log(value)
+            console.log(value);
+
+            createIcons("read-file-icon", "assets/icons/hypercard.svg", value)
+
         }
     });
 
     //ok button to work for alert box
-    document.querySelector("#alert-okay").addEventListener('click',(e)=>{
+    document.querySelector("#alert-okay").addEventListener('click', (e) => {
         const alertBox = document.querySelector(".alert-box");
-        alertBox.style.display = "none";
+        alertBox.style.setProperty('display', 'none', 'important');
     })
 
     // double clicking the window will open the window fixed pos but can drag around
@@ -165,8 +188,15 @@ function init() {
 
             const windowDiv = document.getElementById(windowId)
             if (windowDiv) {
-                windowDiv.style.display = "block";
+                const displayMode = windowDiv.id === 'read-file' ? 'flex' : 'block';
+                windowDiv.style.setProperty('display', displayMode, 'important');
+                windowDiv.style.margin = '0';
+                const id = activeWindows.indexOf(windowId);
+                if (id === -1) activeWindows.push(windowId);
+
+                bringWindowToTop(windowId);
             }
+            console.log(activeWindows);
         })
     });
 }
@@ -184,14 +214,23 @@ function dragElementWindows(element) {
         // e = e || window.event;
         if (e.target.closest('button')) return;
         if (e.target.closest('input')) return;
+        if (e.target.closest(".window-pane")) return;
 
         e.preventDefault();
         // Step 7: Get the mouse cursor position at startup.
+
+        const rect = element.getBoundingClientRect();
+        element.style.top = rect.top + 'px';
+        element.style.left = rect.left + 'px';
+        element.style.margin = "0";
+
         initialX = e.clientX;
         initialY = e.clientY;
 
         element.style.margin = '0';
         // Step 8: Set up event listeners for mouse movement (`elementDrag`) and mouse button release (`closeDragElement`).
+        bringWindowToTop(element.id);
+
         document.onmouseup = stopDragging;
         document.onmousemove = dragging;
     }
@@ -346,17 +385,17 @@ function playLoadingAnimationOnce() {
 
     setTimeout(() => {
         fadeOut(happyMac, 100, () => {
-            happyMac.style.display = 'none';
+            happyMac.style.setProperty('display', 'none', 'important');
 
-            welcome.style.display = 'flex';
+            welcome.style.setProperty('display', 'flex', 'important');
             welcome.style.opacity = '0';
             fadeIn(welcome, 100);
 
             setTimeout(() => {
                 fadeOut(welcome, 100, () => {
-                    welcome.style.display = 'none';
-                    parentForAnimation.style.display = "none";
-                    document.querySelector(".after-loading").style.display = "flex";
+                    welcome.style.setProperty('display', 'none', 'important');
+                    parentForAnimation.style.setProperty('display', 'none', 'important');
+                    document.querySelector(".after-loading").style.setProperty('display', 'flex', 'important');
                     init();
                 });
             }, 100);
@@ -368,17 +407,138 @@ playLoadingAnimationOnce();
 
 document.getElementById("open").addEventListener('click', (e) => {
     const win = document.getElementById("open-folder");
-    win.style.display = "block";
+    win.style.setProperty('display', 'block', 'important');
+
+    const fileList = document.getElementById("file-list");
+    fileList.innerHTML = "";
+
+    bringWindowToTop("open-folder");
+
+    files.forEach(file => {
+        const item = document.createElement("div");
+        item.className = "flex items-center gap-2 cursor-pointer px-1";
+        item.innerHTML = `
+            <img src = "${file.iconSrc}" width = "24" height="24"/>
+            <sapn class= "text-sm!"> ${file.label}</span>         
+        `
+        item.addEventListener("dblclick", (e) => {
+            const win = document.getElementById(file.id);
+            if (win) {
+                win.style.setProperty("display", "block", "important");
+                const id = activeWindows.indexOf(file.id);
+                if (id === -1) activeWindows.push(file.id);
+                bringWindowToTop(file.id);
+            }
+        })
+        fileList.appendChild(item);
+    })
+
     document.activeElement.blur();
 });
 
 document.getElementById("new").addEventListener('click', (e) => {
     const win = document.getElementById("new-folder");
-    win.style.display = "block";
+    win.style.setProperty('display', 'block', 'important');
 
     document.activeElement.blur();
+
+    bringWindowToTop("new-folder");
 
     win.style.top = (window.innerHeight / 2) - (win.offsetHeight / 2) + 'px';
     win.style.left = (window.innerWidth / 2) - (win.offsetWidth / 2) + 'px';
 
+});
+
+function createIcons(id, iconSrc, label) {
+    const div = document.createElement("div");
+    div.id = id;
+    div.className = "homeIcons";
+
+    div.innerHTML = `
+    <div>
+        <img src="${iconSrc}" alt ="${label}" width="24" height="24" draggable="false"/>
+    </div>
+    <div>
+        <p class="text-sm! w-fit font-normal bg-white text-black">${label}</p>
+    </div>  
+    `;
+    document.querySelector(".home").appendChild(div);
+
+    const idFile = id.replace("-icon", "");
+
+    files.push({ id: idFile, label: label, iconSrc: iconSrc });
+
+    div.style.position = "absolute";
+    div.style.left = (col * iconSize) + "px";
+    div.style.top = (row * iconSize) + "px";
+
+    row++;
+
+    if (row >= iconsPerCol) {
+        row = 0;
+        col++;
+    }
+
+    div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".homeIcons").forEach(icon => icon.style.filter = '');
+
+        div.style.filter = "invert(1)";
+    })
+
+    dragElement(div);
+
+    div.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        const winId = id.replace("-icon", "");
+        const win = document.getElementById(winId);
+        if (win) {
+            const displayMode = win.id === 'read-file' ? 'flex' : 'block';
+            win.style.setProperty('display', displayMode, 'important');
+            win.style.margin = '0';
+            const title = win.querySelector(".title");
+            if (title) title.textContent = label;
+
+            const panel = win.querySelector(".window-pane");
+            if (panel) panel.contentEditable = "true";
+            panel.focus();
+
+            const idThere = activeWindows.indexOf(winId);
+            if (idThere === -1) activeWindows.push(winId);
+            bringWindowToTop(winId);
+        }
+        console.log(activeWindows);
+    });
+}
+
+//to close current specific window from nav bar
+document.getElementById("close-win").addEventListener("click", (e) => {
+    e.stopPropagation();
+    const lastWinId = activeWindows.pop();
+    if (lastWinId) {
+        const lastWinDiv = document.getElementById(lastWinId);
+        lastWinDiv.style.setProperty('display', 'none', 'important');
+    }
+    document.activeElement.blur();
 })
+
+//to close all specific windows from nav bar
+document.getElementById("close-all-win").addEventListener("click", (e) => {
+    e.stopPropagation();
+    for (let i = 0; i < activeWindows.length; i++) {
+        const win = document.getElementById(activeWindows[i]);
+        if (win) win.style.setProperty('display', 'none', 'important');
+    }
+    activeWindows = [];
+    document.activeElement.blur();
+});
+
+function bringWindowToTop(winId) {
+    if (!winId) return;
+    activeWindows = activeWindows.filter(id => id !== winId);
+    activeWindows.push(winId);
+    activeWindows.forEach((id, index) => {
+        const win = document.getElementById(id);
+        if (win) win.style.zIndex = (100 + index).toString();
+    });
+}
