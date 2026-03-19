@@ -160,7 +160,7 @@ function init() {
             alertBox.style.setProperty('display', 'block', 'important');
             alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
             alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
-            alertBox.style.zIndex = "999";
+            alertBox.style.zIndex = "2000";
 
             alertBox.style.visibility = "";
 
@@ -418,7 +418,7 @@ document.getElementById("open").addEventListener('click', (e) => {
         const item = document.createElement("div");
         item.className = "flex items-center gap-2 cursor-pointer px-1";
         item.innerHTML = `
-            <img src = "${file.iconSrc}" width = "24" height="24"/>
+            <img src = "${file.iconSrc}" width = "16" height="16"/>
             <sapn class= "text-sm!"> ${file.label}</span>         
         `
         item.addEventListener("dblclick", (e) => {
@@ -541,4 +541,48 @@ function bringWindowToTop(winId) {
         const win = document.getElementById(id);
         if (win) win.style.zIndex = (100 + index).toString();
     });
+}
+
+document.getElementById("open-open").addEventListener("click", (e) => {
+    e.stopPropagation();
+    const input = document.getElementById("open-input-field");
+    const value = input.value.trim();
+
+    if (value === "") {
+        alertBox("Enter some File/Folder Name.");
+        return;
+    };
+
+    const file = files.find(f => f.label === value);
+    if (!file) {
+        console.log("No file found with label:", value);
+        alertBox("File not found. Check the name and try again.");
+        return;
+    }
+
+    const win = document.getElementById(file.id);
+    if (win) {
+        win.style.setProperty("display", "block", "important");
+        const index = activeWindows.indexOf(file.id);
+        if (index === -1) activeWindows.push(file.id);
+        bringWindowToTop(file.id);
+        input.value = "";
+    }
+});
+
+function alertBox(content) {
+
+    const alertBox = document.querySelector(".alert-box");
+    const alertText = alertBox.querySelector(".alert-text");
+
+    alertText.textContent = content;
+
+    alertBox.style.visibility = "hidden";
+    alertBox.style.setProperty("display","block","important");
+    alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
+    alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
+
+    alertBox.style.zIndex = '2000';
+
+    alertBox.style.visibility = '';
 }
