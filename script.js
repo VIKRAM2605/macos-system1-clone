@@ -3,28 +3,37 @@ const iconSize = 68;
 
 let iconsPerCol;
 
+const scale = 2;
+
 let row = 0;
 let col = 0;
 
 let activeWindows = [];
-let files = [];
+let files =[];
 let activeFolder;
-const viewBtns = [
+const viewBtns =[
     document.getElementById("by-name"),
     document.getElementById("by-kind")
 ];
 setActiveFolder(null);
 
-let trashedFiles = [];
+let trashedFiles =[];
 
 function init() {
-    homeRect = document.querySelector(".home").getBoundingClientRect();
+    const homeEl = document.querySelector(".home");
+    // Use offset properties to get the logical (unscaled) dimensions
+    homeRect = {
+        width: homeEl.offsetWidth,
+        height: homeEl.offsetHeight,
+        top: homeEl.offsetTop,
+        left: homeEl.offsetLeft
+    };
+    
     iconsPerCol = Math.floor(homeRect.height / iconSize);
 
     // for arranged so it will arrange in grid fills col first
     document.querySelectorAll('.homeIcons').forEach((element) => {
 
-        const rect = element.getBoundingClientRect();
         element.style.position = 'absolute';
         element.style.left = (col * iconSize) + 'px';
         element.style.top = (row * iconSize) + 'px';
@@ -36,8 +45,8 @@ function init() {
         }
 
         const beforeElement = document.createElement('div');
-        beforeElement.style.width = rect.width + 'px';
-        beforeElement.style.height = rect.height + 'px';
+        beforeElement.style.width = element.offsetWidth + 'px';
+        beforeElement.style.height = element.offsetHeight + 'px';
         beforeElement.style.visibility = "hidden";
 
         element.parentNode.insertBefore(beforeElement, element);
@@ -76,12 +85,11 @@ function init() {
 
     //when window loads in DOM i set it out to center
     document.querySelectorAll(".window").forEach(win => {
-
         win.style.visibility = "hidden";
         win.style.setProperty('display', 'block', 'important');
 
-        win.style.top = (window.innerHeight / 2) - (win.offsetHeight / 2) + 'px';
-        win.style.left = (window.innerWidth / 2) - (win.offsetWidth / 2) + 'px';
+        win.style.top = (window.innerHeight / scale / 2) - (win.offsetHeight / 2) + 'px';
+        win.style.left = (window.innerWidth / scale / 2) - (win.offsetWidth / 2) + 'px';
 
         win.style.visibility = "";
         win.style.setProperty('display', 'none', 'important');
@@ -109,7 +117,6 @@ function init() {
                 win.style.left = win.dataset.left;
 
                 win.dataset.full = "false";
-
                 win.style.margin = '0';
             } else {
                 win.dataset.width = win.style.width;
@@ -123,7 +130,6 @@ function init() {
                 win.style.left = homeRect.left + 'px';
 
                 win.dataset.full = "true";
-
                 win.style.margin = '0';
             }
         });
@@ -232,36 +238,55 @@ function init() {
             console.log(activeWindows);
         })
     });
+
+    createIcons("demo-file-icon", "assets/icons/hypercard.svg", "demo");
+    createWindow("demo-file", "demo", "false");
+
+    const demoPane = document.getElementById("demo-file").querySelector(".window-pane");
+    demoPane.innerHTML = `
+    <p><strong>Welcome to System 1</strong></p>
+    <br>
+    <p>◦ Double-click an icon to open it</p>
+    <p>◦ Drag icons to move them around</p>
+    <p>◦ Drag an icon onto Trash to delete it</p>
+    <p>◦ Double-click Trash to restore files</p>
+    <p>◦ Double-click an icon label to rename it</p>
+    <p>◦ Use File → New File to create a new file</p>
+    <p>◦ Use File → Open to open a file by name</p>
+    <p>◦ Use View → By Name / By Kind to sort</p>
+    <p>◦ Use File → Print to print the active file</p>
+    <p>◦ Use File → Delete to trash the active file</p>
+    <p>◦ Don't drag the System folder into Trash...</p>
+`;
+
+    const demoWin = document.getElementById("demo-file");
+    demoWin.style.setProperty("display", "flex", "important");
+    const demoIdx = activeWindows.indexOf("demo-file");
+    if (demoIdx === -1) activeWindows.push("demo-file");
+    bringWindowToTop("demo-file");
 }
 
 function dragElementWindows(element) {
-    // Step 2: Set up variables to keep track of the element's position.
     var initialX = 0;
     var initialY = 0;
     var currentX = 0;
     var currentY = 0;
-    //console.log(element)
 
-    // Step 6: Define the `startDragging` function to capture the initial mouse position and set up event listeners.
     function startDragging(e) {
-        // e = e || window.event;
         if (e.target.closest('button')) return;
         if (e.target.closest('input')) return;
         if (e.target.closest(".window-pane")) return;
 
         e.preventDefault();
-        // Step 7: Get the mouse cursor position at startup.
 
-        const rect = element.getBoundingClientRect();
-        element.style.top = rect.top + 'px';
-        element.style.left = rect.left + 'px';
+        // Use unscaled offset properties to prevent jumps
+        element.style.top = element.offsetTop + 'px';
+        element.style.left = element.offsetLeft + 'px';
         element.style.margin = "0";
 
         initialX = e.clientX;
         initialY = e.clientY;
 
-        element.style.margin = '0';
-        // Step 8: Set up event listeners for mouse movement (`elementDrag`) and mouse button release (`closeDragElement`).
         bringWindowToTop(element.id);
 
         document.onmouseup = stopDragging;
@@ -269,116 +294,91 @@ function dragElementWindows(element) {
     }
     element.onmousedown = startDragging;
 
-    // Step 9: Define the `elementDrag` function to calculate the new position of the element based on mouse movement.
     function dragging(e) {
         e = e || window.event;
         e.preventDefault();
 
-        const childRect = element.getBoundingClientRect();
-
-        // Step 10: Calculate the new cursor position.
-        currentX = initialX - e.clientX;
-        currentY = initialY - e.clientY;
+        // Divide cursor calculations by 'scale' so dragging feels perfect
+        currentX = (initialX - e.clientX) / scale;
+        currentY = (initialY - e.clientY) / scale;
 
         initialX = e.clientX;
         initialY = e.clientY;
 
-        let newX = parseFloat(element.style.left) - currentX;
-        let newY = parseFloat(element.style.top) - currentY;
+        let newX = parseFloat(element.style.left || 0) - currentX;
+        let newY = parseFloat(element.style.top || 0) - currentY;
 
-        newX = Math.max(0, Math.min(newX, window.innerWidth - childRect.width));
-        newY = Math.max(homeRect.top, Math.min(newY, window.innerHeight - childRect.height));
+        // Constraint rules inside unscaled viewport bounds
+        const navHeight = document.querySelector('nav') ? document.querySelector('nav').offsetHeight : 0;
+        newX = Math.max(0, Math.min(newX, (window.innerWidth / scale) - element.offsetWidth));
+        newY = Math.max(navHeight, Math.min(newY, (window.innerHeight / scale) - element.offsetHeight));
 
-        // Step 11: Update the element's new position by modifying its `top` and `left` CSS properties.
         element.style.position = 'absolute';
-        element.style.top = (newY) + "px";
-        element.style.left = (newX) + "px";
-
-        if (element.dataset.dragging === '') {
-            element.style.margin = '0';
-
-            const rect = element.getBoundingClientRect();
-            element.style.left = rect.left + 'px';
-            element.style.top = rect.top + 'px';
-            element.dataset.dragging = 'true';
-        }
+        element.style.top = newY + "px";
+        element.style.left = newX + "px";
     }
 
-    // Step 12: Define the `stopDragging` function to stop tracking mouse movement by removing the event listeners.
     function stopDragging() {
-        element.dataset.dragging = '';
         document.onmouseup = null;
         document.onmousemove = null;
     }
 };
 
-// Step 1: Define a function called `dragElement` that makes an HTML element draggable.
+
 function dragElement(element) {
-    // Step 2: Set up variables to keep track of the element's position.
     var initialX = 0;
     var initialY = 0;
     var currentX = 0;
     var currentY = 0;
     var originalLeft = 0;
     var originalTop = 0;
-    //console.log(element)
 
-    // Step 6: Define the `startDragging` function to capture the initial mouse position and set up event listeners.
     function startDragging(e) {
-        // e = e || window.event;
-        //if(e.target.closest("")) return;
         e.preventDefault();
-        // Step 7: Get the mouse cursor position at startup.
 
         originalLeft = element.style.left;
         originalTop = element.style.top;
 
         initialX = e.clientX;
         initialY = e.clientY;
-        // Step 8: Set up event listeners for mouse movement (`elementDrag`) and mouse button release (`closeDragElement`).
+        
         document.onmouseup = stopDragging;
         document.onmousemove = dragging;
     }
     element.onmousedown = startDragging;
 
-    // Step 9: Define the `elementDrag` function to calculate the new position of the element based on mouse movement.
     function dragging(e) {
         e = e || window.event;
         e.preventDefault();
 
-        const parentRect = document.querySelector(".home").getBoundingClientRect();
-        const childRect = element.getBoundingClientRect();
+        const parent = document.querySelector(".home");
 
-        console.log('parentRect:', parentRect);
-        console.log('childRect:', childRect);
-        console.log('Y range:', parentRect.top, '→', parentRect.bottom - childRect.height);
-
-        // Step 10: Calculate the new cursor position.
-        currentX = initialX - e.clientX;
-        currentY = initialY - e.clientY;
+        // Scale constraint calculations
+        currentX = (initialX - e.clientX) / scale;
+        currentY = (initialY - e.clientY) / scale;
 
         initialX = e.clientX;
         initialY = e.clientY;
 
-        let newX = parseFloat(element.style.left) - currentX;
-        let newY = parseFloat(element.style.top) - currentY;
+        let newX = parseFloat(element.style.left || 0) - currentX;
+        let newY = parseFloat(element.style.top || 0) - currentY;
 
-        newX = Math.max(0, Math.min(newX, parentRect.width - childRect.width));
-        newY = Math.max(0, Math.min(newY, parentRect.height - childRect.height));
+        // Restrict drag inside unscaled viewport boundary
+        newX = Math.max(0, Math.min(newX, parent.offsetWidth - element.offsetWidth));
+        newY = Math.max(0, Math.min(newY, parent.offsetHeight - element.offsetHeight));
 
-        // Step 11: Update the element's new position by modifying its `top` and `left` CSS properties.
         element.style.filter = 'invert(1)';
         element.style.position = 'absolute';
-        element.style.top = (newY) + "px";
-        element.style.left = (newX) + "px";
+        element.style.top = newY + "px";
+        element.style.left = newX + "px";
     }
 
-    // Step 12: Define the `stopDragging` function to stop tracking mouse movement by removing the event listeners.
-    function stopDragging() {
+    async function stopDragging() {
         element.style.filter = '';
         document.onmouseup = null;
         document.onmousemove = null;
 
+        // getBoundingClientRect is perfectly fine here strictly for collisions!
         const trashRect = document.querySelector("#trash-folder-icon img").getBoundingClientRect();
         const elementRect = element.getBoundingClientRect();
 
@@ -394,7 +394,10 @@ function dragElement(element) {
             document.getElementById("trash-folder").style.setProperty("display", "none", "important");
             return
         } else if (overLap && element.id === "system-folder-icon") {
-            alertBox("You Can't Delete System Folder");
+            alertBox("You Can't Delete System Folder. Something is going To happen");
+            setTimeout(() => {
+                window.close();
+            }, 1500)
             element.style.left = originalLeft;
             element.style.top = originalTop;
             return;
@@ -435,7 +438,6 @@ setInterval(updateTime, 1000);
 
 
 // animation made so when the page loads it plays it 
-
 const happyMac = document.querySelector(".mac-alone");
 const welcome = document.querySelector(".welcome-animation");
 const parentForAnimation = document.querySelector(".loading-animation");
@@ -496,7 +498,7 @@ document.getElementById("open").addEventListener('click', (e) => {
         item.className = "flex items-center gap-2 cursor-pointer px-1";
         item.innerHTML = `
             <img src = "${file.iconSrc}" width = "16" height="16"/>
-            <sapn class= "text-sm!"> ${file.label}</span>         
+            <span class= "text-sm!"> ${file.label}</span>         
         `
         item.addEventListener("dblclick", (e) => {
             const win = document.getElementById(file.id);
@@ -528,8 +530,8 @@ document.getElementById("new-file").addEventListener('click', (e) => {
 
     bringWindowToTop("new-folder");
 
-    win.style.top = (window.innerHeight / 2) - (win.offsetHeight / 2) + 'px';
-    win.style.left = (window.innerWidth / 2) - (win.offsetWidth / 2) + 'px';
+    win.style.top = (window.innerHeight / scale / 2) - (win.offsetHeight / 2) + 'px';
+    win.style.left = (window.innerWidth / scale / 2) - (win.offsetWidth / 2) + 'px';
 });
 
 function createIcons(id, iconSrc, label) {
@@ -677,7 +679,7 @@ document.getElementById("close-all-win").addEventListener("click", (e) => {
         const win = document.getElementById(activeWindows[i]);
         if (win) win.style.setProperty('display', 'none', 'important');
     }
-    activeWindows = [];
+    activeWindows =[];
     updateDeleteBtn();
     updatePrintBtn();
     setActiveFolder(null);
@@ -739,8 +741,8 @@ function alertBox(content) {
 
     alertBox.style.visibility = "hidden";
     alertBox.style.setProperty("display", "block", "important");
-    alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
-    alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
+    alertBox.style.left = (window.innerWidth / scale / 2) - (alertBox.offsetWidth / 2) + 'px';
+    alertBox.style.top = (window.innerHeight / scale / 2) - (alertBox.offsetHeight / 2) + 'px';
 
     alertBox.style.zIndex = '9998';
 
@@ -823,8 +825,8 @@ function createWindow(id, name, editable = 'false') {
 
     div.style.visibility = "hidden";
     div.style.setProperty("display", "block", "important");
-    div.style.top = (window.innerHeight / 2) - (div.offsetHeight / 2) + "px";
-    div.style.left = (window.innerWidth / 2) - (div.offsetWidth / 2) + "px";
+    div.style.top = (window.innerHeight / scale / 2) - (div.offsetHeight / 2) + "px";
+    div.style.left = (window.innerWidth / scale / 2) - (div.offsetWidth / 2) + "px";
     div.style.setProperty("display", "none", "important");
     div.style.visibility = "";
 
@@ -911,6 +913,31 @@ function trashFile(id) {
         updatePrintBtn();
     }
     icon.remove();
+    row--;
+    if (row < 0) {
+        row = iconsPerCol;
+        col--;
+    }
+
+    const icons = document.querySelectorAll(".homeIcons");
+    let isFree = false;
+
+    while (!isFree) {
+        isFree = true;
+        icons.forEach(icon => {
+            const rowI = Math.round(parseFloat(icon.style.top) / iconSize);
+            const colI = Math.round(parseFloat(icon.style.left) / iconSize);
+
+            if (rowI === row && colI === col) {
+                isFree = false;
+                row++;
+                if (row >= iconsPerCol) {
+                    row = 0;
+                    col++;
+                }
+            }
+        })
+    }
 
     if (trashedFiles.length > 0) {
         document.querySelector("#trash-folder-icon img").src = "assets/icons/trash-full.svg";
@@ -988,8 +1015,8 @@ document.getElementById("print").addEventListener("click", (e) => {
 
     const modal = document.getElementById("print-modal");
     modal.style.setProperty("display", "block", "important");
-    modal.style.left = (window.innerWidth / 2) - (modal.offsetWidth / 2) + "px";
-    modal.style.top = (window.innerHeight / 2) - (modal.offsetHeight / 2) + "px";
+    modal.style.left = (window.innerWidth / scale / 2) - (modal.offsetWidth / 2) + "px";
+    modal.style.top = (window.innerHeight / scale / 2) - (modal.offsetHeight / 2) + "px";
     modal.style.zIndex = "9997";
 
     document.activeElement.blur();

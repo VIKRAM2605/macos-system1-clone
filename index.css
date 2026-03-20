@@ -1,3 +1,9 @@
+body {
+    transform-origin: top left;
+    transform: scale(2);
+    width: calc(100vw / 2);
+    height: calc(100vh / 2);
+}
 .home {
     position: relative;
     width:100%;
