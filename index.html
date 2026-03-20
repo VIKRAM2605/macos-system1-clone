@@ -38,6 +38,7 @@
                         <li role="menu-item"><button id="new-file">New File</button></li>
                         <li role="menu-item"><button id="close-win">Close</button></li>
                         <li role="menu-item"><button id="close-all-win">Close All</button></li>
+                        <li role="menu-item"><button id="delete">Delete Current</button></li>
                         <li role="menu-item"><button id="print">Print</button></li>
                     </ul>
                 </li>
@@ -100,7 +101,8 @@
             </div>
             <div class="separator"></div>
 
-            <div class="window-pane flex! flex-row! flex-wrap gap-2 overflow-y-auto p-0! items-start content-start" id="trash-list">
+            <div class="window-pane flex! flex-row! flex-wrap gap-2 overflow-y-auto p-0! items-start content-start"
+                id="trash-list">
             </div>
         </div>
         <div class="window fixed w-128 h-48 z-10" id="open-folder" style="display: none !important;">
@@ -163,6 +165,31 @@
                     </section>
                     <section class="field-row" style="justify-content: flex-end">
                         <button class="btn" id="alert-okay">OK</button>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <div class="modal-dialog  outer-border h-fit! w-fit! fixed" id="print-modal" style="display: none !important;">
+            <div class="inner-border">
+                <div class="modal-contents">
+                    <section class="field-row" style="justify-content: flex-start; gap: 10px;">
+                        <p class="modeless-text text-xl!" style="white-space: nowrap;">Quality:</p>
+                        <div class="field-row m-0!">
+                            <input id="quality-standard" type="radio" name="print-quality" checked>
+                            <label for="quality-standard">Standard</label>
+                        </div>
+                        <div class="field-row m-0!">
+                            <input id="quality-high" type="radio" name="print-quality">
+                            <label for="quality-high">High</label>
+                        </div>
+                    </section>
+                    <section class="field-row" style="justify-content: flex-start; gap: 10px; margin-top: 8px;">
+                        <p class="modeless-text text-xl!" style="white-space: nowrap;">Copies:</p>
+                        <input id="copies" type="number" min="1" value="1" style="width: 60px;" />
+                    </section>
+                    <section class="field-row" style="justify-content: flex-end; margin-top: 16px;">
+                        <button class="btn" id="cancel">Cancel</button>
+                        <button class="btn" id="print-confirm">Print</button>
                     </section>
                 </div>
             </div>

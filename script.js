@@ -141,6 +141,8 @@ function init() {
                 win.style.height = win.dataset.height;
             }
             activeWindows = activeWindows.filter(id => id !== win.id);
+            updateDeleteBtn();
+            updatePrintBtn();
             if (activeFolder === win.id) setActiveFolder(null);
         })
     });
@@ -152,13 +154,25 @@ function init() {
             if (win) {
                 win.style.setProperty('display', 'none', 'important');
                 activeWindows = activeWindows.filter(id => id !== win.id);
+                updateDeleteBtn();
+                updatePrintBtn();
                 return;
             }
             win = e.target.closest(".alert-box");
             if (win) {
                 win.style.setProperty('display', 'none', 'important');
                 activeWindows = activeWindows.filter(id => id !== win.id);
+                updateDeleteBtn();
+                updatePrintBtn();
                 return;
+            }
+            win = e.target.closest(".modal-dialog");
+            if (win) {
+                win.style.setProperty("display", "none", "important");
+                activeWindows = activeWindows.filter(id => id !== win.id);
+                printFile = null;
+                updateDeleteBtn();
+                updatePrintBtn();
             }
         })
     })
@@ -169,7 +183,7 @@ function init() {
         let value = input.value.trim();
 
         if (value === "") {
-            alertBox("Sorry, Enter Some 'Name' To Create a File");
+            alertBox("Sorry, Enter Some 'File Name' To Create a File");
             input.value = "";
             return;
         }
@@ -205,7 +219,8 @@ function init() {
                 windowDiv.style.margin = '0';
                 const id = activeWindows.indexOf(windowId);
                 if (id === -1) activeWindows.push(windowId);
-
+                updateDeleteBtn();
+                updatePrintBtn();
                 if (displayMode === "flex") {
                     setActiveFolder(null);
                 } else {
@@ -489,6 +504,8 @@ document.getElementById("open").addEventListener('click', (e) => {
                 win.style.setProperty("display", "block", "important");
                 const id = activeWindows.indexOf(file.id);
                 if (id === -1) activeWindows.push(file.id);
+                updateDeleteBtn();
+                updatePrintBtn();
                 bringWindowToTop(file.id);
                 if (file.id.includes("-file")) {
                     setActiveFolder(null);
@@ -578,6 +595,8 @@ function createIcons(id, iconSrc, label) {
 
             const idThere = activeWindows.indexOf(winId);
             if (idThere === -1) activeWindows.push(winId);
+            updateDeleteBtn();
+            updatePrintBtn();
             bringWindowToTop(winId);
 
             if (displayMode === "flex") {
@@ -626,6 +645,8 @@ function editIconNames(label, div) {
         if (index !== -1) {
             activeWindows[index] = newFileId;
         }
+        updateDeleteBtn();
+        updatePrintBtn();
     }, { once: true })
     label.addEventListener("keydown", (e) => {
         if (e.key.toLowerCase() === "enter") {
@@ -644,6 +665,8 @@ document.getElementById("close-win").addEventListener("click", (e) => {
         lastWinDiv.style.setProperty('display', 'none', 'important');
         if (activeFolder === lastWinId) setActiveFolder(null);
     }
+    updateDeleteBtn();
+    updatePrintBtn();
     document.activeElement.blur();
 })
 
@@ -655,6 +678,8 @@ document.getElementById("close-all-win").addEventListener("click", (e) => {
         if (win) win.style.setProperty('display', 'none', 'important');
     }
     activeWindows = [];
+    updateDeleteBtn();
+    updatePrintBtn();
     setActiveFolder(null);
     document.activeElement.blur();
 });
@@ -673,6 +698,8 @@ function bringWindowToTop(winId) {
     } else {
         setActiveFolder(winId);
     }
+    updateDeleteBtn();
+    updatePrintBtn();
 }
 
 document.getElementById("open-open").addEventListener("click", (e) => {
@@ -697,6 +724,8 @@ document.getElementById("open-open").addEventListener("click", (e) => {
         win.style.setProperty("display", "block", "important");
         const index = activeWindows.indexOf(file.id);
         if (index === -1) activeWindows.push(file.id);
+        updateDeleteBtn();
+        updatePrintBtn();
         bringWindowToTop(file.id);
         input.value = "";
     }
@@ -713,7 +742,7 @@ function alertBox(content) {
     alertBox.style.left = (window.innerWidth / 2) - (alertBox.offsetWidth / 2) + 'px';
     alertBox.style.top = (window.innerHeight / 2) - (alertBox.offsetHeight / 2) + 'px';
 
-    alertBox.style.zIndex = '2000';
+    alertBox.style.zIndex = '9998';
 
     alertBox.style.visibility = '';
 }
@@ -756,6 +785,8 @@ function createWindow(id, name, editable = 'false') {
         div.style.setProperty("display", "none", "important");
         activeWindows = activeWindows.filter(winId => winId !== id);
         if (activeFolder === id) setActiveFolder(null);
+        updateDeleteBtn();
+        updatePrintBtn();
     });
 
     resizeBtn.addEventListener("click", (e) => {
@@ -801,15 +832,17 @@ function createWindow(id, name, editable = 'false') {
 };
 
 function sortIcons(sortFn) {
-    if (activeFolder !== "open-folder" && activeFolder !== "system-folder") return;
+    if (activeFolder !== "open-folder" && activeFolder !== "system-folder" && activeFolder !== "trash-folder") return;
 
-    const sorted = [...files].sort(sortFn);
+    let sorted;
 
     let fileList;
     if (activeFolder === "open-folder") {
         fileList = document.getElementById("file-list");
-    } else {
-        fileList = null;
+        sorted = [...files].sort(sortFn);
+    } else if (activeFolder === "trash-folder") {
+        fileList = document.getElementById("trash-list");
+        sorted = [...trashedFiles].sort(sortFn);
         return;
     }
     fileList.innerHTML = "";
@@ -826,6 +859,8 @@ function sortIcons(sortFn) {
                 win.style.setProperty("display", "block", "important");
                 const id = activeWindows.indexOf(file.id);
                 if (id === -1) activeWindows.push(file.id);
+                updateDeleteBtn();
+                updatePrintBtn();
                 bringWindowToTop(file.id);
             }
         })
@@ -848,7 +883,7 @@ document.getElementById("by-kind").addEventListener("click", (e) => {
 
 function setActiveFolder(id) {
     activeFolder = id;
-    const enabled = id === "open-folder" || id === "system-folder";
+    const enabled = id === "open-folder" || id === "system-folder" || id === "trash-folder";
     viewBtns.forEach(btn => {
         btn.classList.toggle("disabled", !enabled);
     })
@@ -872,6 +907,8 @@ function trashFile(id) {
     if (win) {
         win.style.setProperty("display", "none", "important");
         activeWindows = activeWindows.filter(window => window !== fileId);
+        updateDeleteBtn();
+        updatePrintBtn();
     }
     icon.remove();
 
@@ -912,4 +949,94 @@ document.getElementById("trash-folder-icon").addEventListener("dblclick", (e) =>
     const trashWin = document.getElementById("trash-folder");
     trashWin.style.setProperty("display", "block", "important");
     bringWindowToTop("trash-folder");
+});
+
+document.getElementById("delete").addEventListener("click", () => {
+
+    const deletingWinId = activeWindows[activeWindows.length - 1];
+
+    if (!deletingWinId) return;
+
+    if (deletingWinId.includes("-file")) {
+        trashFile(deletingWinId + '-icon');
+    } else {
+        alertBox("You Can't Delete System Folder/Alert.");
+    }
+
+    document.activeElement.blur();
+});
+
+function updateDeleteBtn() {
+    const topWin = activeWindows[activeWindows.length - 1];
+    document.getElementById("delete").classList.toggle("disabled", !topWin);
+}
+updateDeleteBtn();
+
+let printFile = null;
+
+document.getElementById("print").addEventListener("click", (e) => {
+
+    const topWin = activeWindows[activeWindows.length - 1];
+    if (!topWin) return;
+
+    if (topWin.includes("-folder")) {
+        alertBox("You Can Only Print Files.");
+        return;
+    }
+
+    printFile = topWin;
+
+    const modal = document.getElementById("print-modal");
+    modal.style.setProperty("display", "block", "important");
+    modal.style.left = (window.innerWidth / 2) - (modal.offsetWidth / 2) + "px";
+    modal.style.top = (window.innerHeight / 2) - (modal.offsetHeight / 2) + "px";
+    modal.style.zIndex = "9997";
+
+    document.activeElement.blur();
+})
+
+function updatePrintBtn() {
+    const topWin = activeWindows[activeWindows.length - 1];
+    document.getElementById("print").classList.toggle("disabled", !topWin);
+}
+updatePrintBtn();
+
+document.getElementById("print-confirm").addEventListener("click", (e) => {
+    if (!printFile) return;
+
+    const quality = document.getElementById("quality-high").checked ? "high" : "standard";
+    const copies = parseInt(document.getElementById("copies").value) || 1;
+
+    const win = document.getElementById(printFile);
+
+    const content = win?.querySelector(".window-pane")?.innerHTML;
+    const title = win?.querySelector(".title")?.textContent;
+
+    for (let i = 0; i < copies; i++) {
+        const printWin = window.open("", "_blank");
+        if(!printWin){
+            alertBox("Popup Blocked, Please Allow Popups For This Site");
+            document.getElementById("print-modal").style.setProperty("display","none","important");
+            return;
+        }
+        printWin.document.write(
+            `
+                <html>
+                    <head>
+                        <style>
+                            body { font-family: Chicago,monospace;}
+                            ${quality === "high" ? "*{-webkit-print-color-adjust: exact;}" : ""}
+                        </style>
+                    </head>
+                    <body>
+                        <h2>${title}</h2>
+                        ${content}
+                    </body>
+                </html>
+            `);
+        printWin.document.close();
+        printWin.print();
+        printWin.close();
+    }
+    document.getElementById("print-modal").style.setProperty("display", "none", "important");
 })
