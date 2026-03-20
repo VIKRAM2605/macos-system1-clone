@@ -9,15 +9,15 @@ let row = 0;
 let col = 0;
 
 let activeWindows = [];
-let files =[];
+let files = [];
 let activeFolder;
-const viewBtns =[
+const viewBtns = [
     document.getElementById("by-name"),
     document.getElementById("by-kind")
 ];
 setActiveFolder(null);
 
-let trashedFiles =[];
+let trashedFiles = [];
 
 function init() {
     const homeEl = document.querySelector(".home");
@@ -28,7 +28,7 @@ function init() {
         top: homeEl.offsetTop,
         left: homeEl.offsetLeft
     };
-    
+
     iconsPerCol = Math.floor(homeRect.height / iconSize);
 
     // for arranged so it will arrange in grid fills col first
@@ -239,10 +239,10 @@ function init() {
         })
     });
 
-    createIcons("demo-file-icon", "assets/icons/hypercard.svg", "demo");
-    createWindow("demo-file", "demo", "false");
+    createIcons("instruction-file-icon", "assets/icons/hypercard.svg", "Guide");
+    createWindow("instruction-file", "Guide", "false");
 
-    const demoPane = document.getElementById("demo-file").querySelector(".window-pane");
+    const demoPane = document.getElementById("instruction-file").querySelector(".window-pane");
     demoPane.innerHTML = `
     <p><strong>Welcome to System 1</strong></p>
     <br>
@@ -259,11 +259,11 @@ function init() {
     <p>◦ Don't drag the System folder into Trash...</p>
 `;
 
-    const demoWin = document.getElementById("demo-file");
+    const demoWin = document.getElementById("instruction-file");
     demoWin.style.setProperty("display", "flex", "important");
-    const demoIdx = activeWindows.indexOf("demo-file");
-    if (demoIdx === -1) activeWindows.push("demo-file");
-    bringWindowToTop("demo-file");
+    const demoIdx = activeWindows.indexOf("instruction-file");
+    if (demoIdx === -1) activeWindows.push("instruction-file");
+    bringWindowToTop("instruction-file");
 }
 
 function dragElementWindows(element) {
@@ -276,10 +276,10 @@ function dragElementWindows(element) {
         if (e.target.closest('button')) return;
         if (e.target.closest('input')) return;
         if (e.target.closest(".window-pane")) return;
+        if (e.target.closest(".details-bar")) return;
 
         e.preventDefault();
 
-        // Use unscaled offset properties to prevent jumps
         element.style.top = element.offsetTop + 'px';
         element.style.left = element.offsetLeft + 'px';
         element.style.margin = "0";
@@ -298,7 +298,6 @@ function dragElementWindows(element) {
         e = e || window.event;
         e.preventDefault();
 
-        // Divide cursor calculations by 'scale' so dragging feels perfect
         currentX = (initialX - e.clientX) / scale;
         currentY = (initialY - e.clientY) / scale;
 
@@ -308,7 +307,6 @@ function dragElementWindows(element) {
         let newX = parseFloat(element.style.left || 0) - currentX;
         let newY = parseFloat(element.style.top || 0) - currentY;
 
-        // Constraint rules inside unscaled viewport bounds
         const navHeight = document.querySelector('nav') ? document.querySelector('nav').offsetHeight : 0;
         newX = Math.max(0, Math.min(newX, (window.innerWidth / scale) - element.offsetWidth));
         newY = Math.max(navHeight, Math.min(newY, (window.innerHeight / scale) - element.offsetHeight));
@@ -341,7 +339,7 @@ function dragElement(element) {
 
         initialX = e.clientX;
         initialY = e.clientY;
-        
+
         document.onmouseup = stopDragging;
         document.onmousemove = dragging;
     }
@@ -353,7 +351,6 @@ function dragElement(element) {
 
         const parent = document.querySelector(".home");
 
-        // Scale constraint calculations
         currentX = (initialX - e.clientX) / scale;
         currentY = (initialY - e.clientY) / scale;
 
@@ -363,7 +360,6 @@ function dragElement(element) {
         let newX = parseFloat(element.style.left || 0) - currentX;
         let newY = parseFloat(element.style.top || 0) - currentY;
 
-        // Restrict drag inside unscaled viewport boundary
         newX = Math.max(0, Math.min(newX, parent.offsetWidth - element.offsetWidth));
         newY = Math.max(0, Math.min(newY, parent.offsetHeight - element.offsetHeight));
 
@@ -378,7 +374,6 @@ function dragElement(element) {
         document.onmouseup = null;
         document.onmousemove = null;
 
-        // getBoundingClientRect is perfectly fine here strictly for collisions!
         const trashRect = document.querySelector("#trash-folder-icon img").getBoundingClientRect();
         const elementRect = element.getBoundingClientRect();
 
@@ -394,7 +389,7 @@ function dragElement(element) {
             document.getElementById("trash-folder").style.setProperty("display", "none", "important");
             return
         } else if (overLap && element.id === "system-folder-icon") {
-            alertBox("You Can't Delete System Folder. Something is going To happen");
+            alertBox("You Just did rm -rf/.");
             setTimeout(() => {
                 window.close();
             }, 1500)
@@ -460,26 +455,26 @@ function fadeOut(element, duration = 500, onDone) {
 function playLoadingAnimationOnce() {
     happyMac.style.opacity = '0';
 
-    fadeIn(happyMac, 100);
+    fadeIn(happyMac, 700);
 
     setTimeout(() => {
-        fadeOut(happyMac, 100, () => {
+        fadeOut(happyMac, 700, () => {
             happyMac.style.setProperty('display', 'none', 'important');
 
             welcome.style.setProperty('display', 'flex', 'important');
             welcome.style.opacity = '0';
-            fadeIn(welcome, 100);
+            fadeIn(welcome, 700);
 
             setTimeout(() => {
-                fadeOut(welcome, 100, () => {
+                fadeOut(welcome, 700, () => {
                     welcome.style.setProperty('display', 'none', 'important');
                     parentForAnimation.style.setProperty('display', 'none', 'important');
                     document.querySelector(".after-loading").style.setProperty('display', 'flex', 'important');
                     init();
                 });
-            }, 100);
+            }, 700);
         });
-    }, 100);
+    }, 700);
 }
 
 playLoadingAnimationOnce();
@@ -679,7 +674,7 @@ document.getElementById("close-all-win").addEventListener("click", (e) => {
         const win = document.getElementById(activeWindows[i]);
         if (win) win.style.setProperty('display', 'none', 'important');
     }
-    activeWindows =[];
+    activeWindows = [];
     updateDeleteBtn();
     updatePrintBtn();
     setActiveFolder(null);
