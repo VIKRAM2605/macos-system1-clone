@@ -8,7 +8,14 @@ let col = 0;
 
 let activeWindows = [];
 let files = [];
-let activeFolder = null;
+let activeFolder;
+const viewBtns = [
+    document.getElementById("by-name"),
+    document.getElementById("by-kind")
+];
+setActiveFolder(null);
+
+let trashedFiles = [];
 
 function init() {
     homeRect = document.querySelector(".home").getBoundingClientRect();
@@ -48,6 +55,13 @@ function init() {
             })
             element.style.filter = 'invert(1)';
         })
+
+        const labelP = element.querySelector("p");
+        labelP.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            alertBox("You Can't 'Rename' this Folder/File");
+        })
+
         dragElement(element)
     });
 
@@ -127,7 +141,7 @@ function init() {
                 win.style.height = win.dataset.height;
             }
             activeWindows = activeWindows.filter(id => id !== win.id);
-            if (activeFolder === win.id) activeFolder = null;
+            if (activeFolder === win.id) setActiveFolder(null);
         })
     });
 
@@ -193,9 +207,9 @@ function init() {
                 if (id === -1) activeWindows.push(windowId);
 
                 if (displayMode === "flex") {
-                    activeFolder = null;
+                    setActiveFolder(null);
                 } else {
-                    activeFolder = windowId;
+                    setActiveFolder(windowId);
                 }
 
                 bringWindowToTop(windowId);
@@ -290,13 +304,20 @@ function dragElement(element) {
     var initialY = 0;
     var currentX = 0;
     var currentY = 0;
+    var originalLeft = 0;
+    var originalTop = 0;
     //console.log(element)
 
     // Step 6: Define the `startDragging` function to capture the initial mouse position and set up event listeners.
     function startDragging(e) {
         // e = e || window.event;
+        //if(e.target.closest("")) return;
         e.preventDefault();
         // Step 7: Get the mouse cursor position at startup.
+
+        originalLeft = element.style.left;
+        originalTop = element.style.top;
+
         initialX = e.clientX;
         initialY = e.clientY;
         // Step 8: Set up event listeners for mouse movement (`elementDrag`) and mouse button release (`closeDragElement`).
@@ -342,6 +363,45 @@ function dragElement(element) {
         element.style.filter = '';
         document.onmouseup = null;
         document.onmousemove = null;
+
+        const trashRect = document.querySelector("#trash-folder-icon img").getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+
+        let overLap = (
+            elementRect.left < trashRect.right &&
+            elementRect.right > trashRect.left &&
+            elementRect.top < trashRect.bottom &&
+            elementRect.bottom > trashRect.top
+        );
+
+        if (overLap && element.id !== "trash-folder-icon" && element.id !== "system-folder-icon") {
+            trashFile(element.id);
+            document.getElementById("trash-folder").style.setProperty("display", "none", "important");
+            return
+        } else if (overLap && element.id === "system-folder-icon") {
+            alertBox("You Can't Delete System Folder");
+            element.style.left = originalLeft;
+            element.style.top = originalTop;
+            return;
+        }
+
+        document.querySelectorAll(".homeIcons").forEach(icon => {
+            if (icon === element) return;
+
+            const iconRect = icon.getBoundingClientRect();
+
+            overLap = (
+                elementRect.left < iconRect.right &&
+                elementRect.right > iconRect.left &&
+                elementRect.top < iconRect.bottom &&
+                elementRect.bottom > iconRect.top
+            )
+
+            if (overLap) {
+                element.style.left = originalLeft;
+                element.style.top = originalTop;
+            }
+        })
     }
 };
 
@@ -431,9 +491,9 @@ document.getElementById("open").addEventListener('click', (e) => {
                 if (id === -1) activeWindows.push(file.id);
                 bringWindowToTop(file.id);
                 if (file.id.includes("-file")) {
-                    activeFolder = null;
+                    setActiveFolder(null);
                 } else {
-                    activeFolder = file.id;
+                    setActiveFolder(file.id);
                 }
             }
         })
@@ -470,6 +530,13 @@ function createIcons(id, iconSrc, label) {
     `;
     document.querySelector(".home").appendChild(div);
 
+    const labelP = div.querySelector("p");
+
+    labelP.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        editIconNames(labelP, div);
+    })
+
     const idFile = id.replace("-icon", "");
 
     files.push({ id: idFile, label: label, iconSrc: iconSrc });
@@ -495,7 +562,7 @@ function createIcons(id, iconSrc, label) {
 
     div.addEventListener('dblclick', (e) => {
         e.stopPropagation();
-        const winId = id.replace("-icon", "");
+        const winId = div.id.replace("-icon", "");
         const win = document.getElementById(winId);
         if (win) {
             const displayMode = win.id.includes('-file') ? 'flex' : 'block';
@@ -503,7 +570,7 @@ function createIcons(id, iconSrc, label) {
             win.style.setProperty('display', displayMode, 'important');
             win.style.margin = '0';
             const title = win.querySelector(".title");
-            if (title) title.textContent = label;
+            if (title) title.textContent = labelP.textContent;
 
             const panel = win.querySelector(".window-pane");
             if (panel) panel.contentEditable = "true";
@@ -514,12 +581,57 @@ function createIcons(id, iconSrc, label) {
             bringWindowToTop(winId);
 
             if (displayMode === "flex") {
-                activeFolder = null;
+                setActiveFolder(null);
             } else {
-                activeFolder = winId;
+                setActiveFolder(winId);
             }
         }
         console.log(activeWindows);
+    });
+}
+
+function editIconNames(label, div) {
+    label.contentEditable = "true";
+    label.focus();
+
+    document.execCommand("selectAll");
+
+    label.addEventListener("blur", () => {
+        label.contentEditable = "false";
+
+        const newName = label.textContent.trim();
+        if (!newName) return;
+
+        const oldIconId = div.id;
+        const oldFileId = oldIconId.replace("-icon", "");
+        const newFileId = newName + "-file";
+        const newIconId = newName + "-file-icon";
+
+        div.id = newIconId;
+
+        const file = files.find(file => file.id === oldFileId);
+        if (file) {
+            file.id = newFileId;
+            file.label = newName;
+        }
+
+        const win = document.getElementById(oldFileId);
+        if (win) {
+            win.id = newFileId;
+            const title = win.querySelector(".title");
+            if (title) title.textContent = newName;
+        }
+
+        const index = activeWindows.indexOf(oldFileId);
+        if (index !== -1) {
+            activeWindows[index] = newFileId;
+        }
+    }, { once: true })
+    label.addEventListener("keydown", (e) => {
+        if (e.key.toLowerCase() === "enter") {
+            e.preventDefault();
+            label.blur();
+        }
     });
 }
 
@@ -530,7 +642,7 @@ document.getElementById("close-win").addEventListener("click", (e) => {
     if (lastWinId) {
         const lastWinDiv = document.getElementById(lastWinId);
         lastWinDiv.style.setProperty('display', 'none', 'important');
-        if (activeFolder === lastWinId) activeFolder = null;
+        if (activeFolder === lastWinId) setActiveFolder(null);
     }
     document.activeElement.blur();
 })
@@ -543,7 +655,7 @@ document.getElementById("close-all-win").addEventListener("click", (e) => {
         if (win) win.style.setProperty('display', 'none', 'important');
     }
     activeWindows = [];
-    activeFolder = null;
+    setActiveFolder(null);
     document.activeElement.blur();
 });
 
@@ -557,9 +669,9 @@ function bringWindowToTop(winId) {
     });
 
     if (winId.includes("-file")) {
-        activeFolder = null;
+        setActiveFolder(null);
     } else {
-        activeFolder = winId;
+        setActiveFolder(winId);
     }
 }
 
@@ -643,7 +755,7 @@ function createWindow(id, name, editable = 'false') {
     closeBtn.addEventListener("click", (e) => {
         div.style.setProperty("display", "none", "important");
         activeWindows = activeWindows.filter(winId => winId !== id);
-        if (activeFolder === id) activeFolder = null;
+        if (activeFolder === id) setActiveFolder(null);
     });
 
     resizeBtn.addEventListener("click", (e) => {
@@ -730,6 +842,74 @@ document.getElementById("by-kind").addEventListener("click", (e) => {
         const isFileA = a.id.includes("-file") ? 1 : 0;
         const isFileB = b.id.includes("-file") ? 1 : 0;
 
-        return  isFileA - isFileB;
+        return isFileA - isFileB;
     })
+});
+
+function setActiveFolder(id) {
+    activeFolder = id;
+    const enabled = id === "open-folder" || id === "system-folder";
+    viewBtns.forEach(btn => {
+        btn.classList.toggle("disabled", !enabled);
+    })
+}
+
+const trashIcon = document.getElementById("trash-folder-icon");
+
+function trashFile(id) {
+    const icon = document.getElementById(id);
+    if (!icon) return;
+
+    const fileId = id.replace("-icon", "");
+    const file = files.find(file => file.id === fileId);
+    if (!file) return;
+
+    trashedFiles.push({ ...file, id });
+    files = files.filter(file => file.id !== fileId);
+
+    const win = document.getElementById(fileId);
+
+    if (win) {
+        win.style.setProperty("display", "none", "important");
+        activeWindows = activeWindows.filter(window => window !== fileId);
+    }
+    icon.remove();
+
+    if (trashedFiles.length > 0) {
+        document.querySelector("#trash-folder-icon img").src = "assets/icons/trash-full.svg";
+    }
+}
+
+function restoreFile(id) {
+    const file = trashedFiles.find(tFile => tFile.id === id);
+    if (!file) return;
+
+    trashedFiles = trashedFiles.filter(tFile => tFile.id !== id);
+    createIcons(id, file.iconSrc, file.label);
+    if (trashedFiles.length === 0) {
+        document.querySelector("#trash-folder-icon img").src = "assets/icons/trash.svg";
+    }
+}
+
+document.getElementById("trash-folder-icon").addEventListener("dblclick", (e) => {
+    const trashList = document.getElementById("trash-list");
+    trashList.innerHTML = "";
+
+    trashedFiles.forEach(file => {
+        const item = document.createElement("div");
+        item.className = "flex items-center gap-2 cursor-pointer px-1";
+        item.innerHTML = `
+            <img src = "${file.iconSrc}" width = "16" height = "16" />
+            <span class="text-sm!">${file.label}</span>
+        `;
+        item.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            restoreFile(file.id);
+            document.getElementById("trash-folder").style.setProperty("display", "none", "important");
+        })
+        trashList.appendChild(item);
+    });
+    const trashWin = document.getElementById("trash-folder");
+    trashWin.style.setProperty("display", "block", "important");
+    bringWindowToTop("trash-folder");
 })
