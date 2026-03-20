@@ -1014,9 +1014,9 @@ document.getElementById("print-confirm").addEventListener("click", (e) => {
 
     for (let i = 0; i < copies; i++) {
         const printWin = window.open("", "_blank");
-        if(!printWin){
+        if (!printWin) {
             alertBox("Popup Blocked, Please Allow Popups For This Site");
-            document.getElementById("print-modal").style.setProperty("display","none","important");
+            document.getElementById("print-modal").style.setProperty("display", "none", "important");
             return;
         }
         printWin.document.write(
@@ -1039,4 +1039,39 @@ document.getElementById("print-confirm").addEventListener("click", (e) => {
         printWin.close();
     }
     document.getElementById("print-modal").style.setProperty("display", "none", "important");
+})
+
+document.getElementById("system-folder-icon").addEventListener("dblclick", (e) => {
+    e.stopPropagation();
+
+    const fileList = document.getElementById("system-list");
+    fileList.innerHTML = "";
+
+    files.forEach(file => {
+        if (file.id === "system-folder") return;
+        console.log(file.id)
+        const item = document.createElement("div");
+        item.className = "flex items-center gap-2 cursor-pointer px-1";
+        item.innerHTML = `
+            <img src = "${file.iconSrc}" width="16" height="16"/>
+            <span class="text-sm!">${file.label}</span>
+        `;
+        item.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+
+            const win = document.getElementById(file.id);
+
+            if (win) {
+                const displayMode = file.id.includes("-file") ? "flex" : "block";
+                win.style.setProperty("display", displayMode, "important");
+                const index = activeWindows.indexOf(file.id);
+                if (index === -1) activeWindows.push(file.id);
+                bringWindowToTop(file.id);
+                updateDeleteBtn();
+                updatePrintBtn();
+            }
+        })
+        fileList.appendChild(item);
+    })
+
 })
