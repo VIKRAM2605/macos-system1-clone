@@ -3,7 +3,7 @@ const iconSize = 68;
 
 let iconsPerCol;
 
-const scale = 2;
+const scale = 1.6;
 
 let row = 0;
 let col = 0;
