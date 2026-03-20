@@ -42,15 +42,10 @@
                     </ul>
                 </li>
                 <li role="menu-item" tabindex="0" aria-haspopup="true">
-                    Edit
-                    <ul role="menu">
-                        <li role="menu-item"><a href="#menu">Action</a></li>
-                    </ul>
-                </li>
-                <li role="menu-item" tabindex="0" aria-haspopup="true">
                     View
                     <ul role="menu">
-                        <li role="menu-item"><a href="#menu">Action</a></li>
+                        <li role="menu-item"><button id="by-name">By Name</button></li>
+                        <li role="menu-item"><button id="by-kind">By Kind</button></li>
                     </ul>
                 </li>
                 <li role="menu-item" tabindex="0" aria-haspopup="true">
@@ -106,7 +101,8 @@
             <div class="separator"></div>
 
             <div class="window-pane flex flex-row">
-                <section class="flex flex-col gap-y-3 w-1/2 border-r-2 border-solid pr-2 border-black" style="justify-content: flex-start;">
+                <section class="flex flex-col gap-y-3 w-1/2 border-r-2 border-solid pr-2 border-black"
+                    style="justify-content: flex-start;">
                     <input aria-label="Example text box" id="open-input-field" type="text" placeholder="File Name" />
                     <button class="btn shrink-0 flex-grow-0 w-fit" id="open-open">Open</button>
                 </section>

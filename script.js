@@ -8,6 +8,7 @@ let col = 0;
 
 let activeWindows = [];
 let files = [];
+let activeFolder = null;
 
 function init() {
     homeRect = document.querySelector(".home").getBoundingClientRect();
@@ -72,6 +73,7 @@ function init() {
         win.style.setProperty('display', 'none', 'important');
         dragElementWindows(win);
     });
+
     //to make click move the window top above all other window
     document.querySelectorAll(".window").forEach(win => {
         win.addEventListener("click", (e) => {
@@ -112,6 +114,7 @@ function init() {
             }
         });
     });
+
     // to make all close buttons works to close the window
     document.querySelectorAll(".close").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -124,8 +127,10 @@ function init() {
                 win.style.height = win.dataset.height;
             }
             activeWindows = activeWindows.filter(id => id !== win.id);
+            if (activeFolder === win.id) activeFolder = null;
         })
     });
+
     // to make cancel m=btn close the window
     document.querySelectorAll("#cancel").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -181,11 +186,17 @@ function init() {
 
             const windowDiv = document.getElementById(windowId)
             if (windowDiv) {
-                const displayMode = windowDiv.id === 'read-file' ? 'flex' : 'block';
+                const displayMode = windowDiv.id.includes("-file") ? 'flex' : 'block';
                 windowDiv.style.setProperty('display', displayMode, 'important');
                 windowDiv.style.margin = '0';
                 const id = activeWindows.indexOf(windowId);
                 if (id === -1) activeWindows.push(windowId);
+
+                if (displayMode === "flex") {
+                    activeFolder = null;
+                } else {
+                    activeFolder = windowId;
+                }
 
                 bringWindowToTop(windowId);
             }
@@ -269,7 +280,6 @@ function dragElementWindows(element) {
         element.dataset.dragging = '';
         document.onmouseup = null;
         document.onmousemove = null;
-
     }
 };
 
@@ -368,7 +378,6 @@ function fadeOut(element, duration = 500, onDone) {
             onDone();
         }
     }, { once: true });
-
 }
 
 function playLoadingAnimationOnce() {
@@ -421,6 +430,11 @@ document.getElementById("open").addEventListener('click', (e) => {
                 const id = activeWindows.indexOf(file.id);
                 if (id === -1) activeWindows.push(file.id);
                 bringWindowToTop(file.id);
+                if (file.id.includes("-file")) {
+                    activeFolder = null;
+                } else {
+                    activeFolder = file.id;
+                }
             }
         })
         fileList.appendChild(item);
@@ -439,7 +453,6 @@ document.getElementById("new-file").addEventListener('click', (e) => {
 
     win.style.top = (window.innerHeight / 2) - (win.offsetHeight / 2) + 'px';
     win.style.left = (window.innerWidth / 2) - (win.offsetWidth / 2) + 'px';
-
 });
 
 function createIcons(id, iconSrc, label) {
@@ -475,7 +488,6 @@ function createIcons(id, iconSrc, label) {
     div.addEventListener('click', (e) => {
         e.stopPropagation();
         document.querySelectorAll(".homeIcons").forEach(icon => icon.style.filter = '');
-
         div.style.filter = "invert(1)";
     })
 
@@ -500,6 +512,12 @@ function createIcons(id, iconSrc, label) {
             const idThere = activeWindows.indexOf(winId);
             if (idThere === -1) activeWindows.push(winId);
             bringWindowToTop(winId);
+
+            if (displayMode === "flex") {
+                activeFolder = null;
+            } else {
+                activeFolder = winId;
+            }
         }
         console.log(activeWindows);
     });
@@ -512,6 +530,7 @@ document.getElementById("close-win").addEventListener("click", (e) => {
     if (lastWinId) {
         const lastWinDiv = document.getElementById(lastWinId);
         lastWinDiv.style.setProperty('display', 'none', 'important');
+        if (activeFolder === lastWinId) activeFolder = null;
     }
     document.activeElement.blur();
 })
@@ -524,6 +543,7 @@ document.getElementById("close-all-win").addEventListener("click", (e) => {
         if (win) win.style.setProperty('display', 'none', 'important');
     }
     activeWindows = [];
+    activeFolder = null;
     document.activeElement.blur();
 });
 
@@ -535,6 +555,12 @@ function bringWindowToTop(winId) {
         const win = document.getElementById(id);
         if (win) win.style.zIndex = (100 + index).toString();
     });
+
+    if (winId.includes("-file")) {
+        activeFolder = null;
+    } else {
+        activeFolder = winId;
+    }
 }
 
 document.getElementById("open-open").addEventListener("click", (e) => {
@@ -565,7 +591,6 @@ document.getElementById("open-open").addEventListener("click", (e) => {
 });
 
 function alertBox(content) {
-
     const alertBox = document.querySelector(".alert-box");
     const alertText = alertBox.querySelector(".alert-text");
 
@@ -618,6 +643,7 @@ function createWindow(id, name, editable = 'false') {
     closeBtn.addEventListener("click", (e) => {
         div.style.setProperty("display", "none", "important");
         activeWindows = activeWindows.filter(winId => winId !== id);
+        if (activeFolder === id) activeFolder = null;
     });
 
     resizeBtn.addEventListener("click", (e) => {
@@ -632,7 +658,6 @@ function createWindow(id, name, editable = 'false') {
 
             win.dataset.full = "false";
         } else {
-
             win.dataset.width = div.style.width;
             win.dataset.height = div.style.height;
             win.dataset.top = div.style.top;
@@ -646,7 +671,6 @@ function createWindow(id, name, editable = 'false') {
             win.dataset.full = "true";
 
             win.style.margin = "0";
-
         }
     })
 
@@ -662,4 +686,50 @@ function createWindow(id, name, editable = 'false') {
     div.style.visibility = "";
 
     dragElementWindows(div);
+};
+
+function sortIcons(sortFn) {
+    if (activeFolder !== "open-folder" && activeFolder !== "system-folder") return;
+
+    const sorted = [...files].sort(sortFn);
+
+    let fileList;
+    if (activeFolder === "open-folder") {
+        fileList = document.getElementById("file-list");
+    } else {
+        fileList = null;
+        return;
+    }
+    fileList.innerHTML = "";
+    sorted.forEach(file => {
+        const item = document.createElement("div");
+        item.className = "flex items-center gap-2 cursor-pointer px-1";
+        item.innerHTML = `
+            <img src="${file.iconSrc}" width="16" height="16"/>
+            <span class="text-sm!"> ${file.label}</span>
+        `;
+        item.addEventListener("dblclick", (e) => {
+            const win = document.getElementById(file.id);
+            if (win) {
+                win.style.setProperty("display", "block", "important");
+                const id = activeWindows.indexOf(file.id);
+                if (id === -1) activeWindows.push(file.id);
+                bringWindowToTop(file.id);
+            }
+        })
+        fileList.appendChild(item);
+    })
 }
+
+document.getElementById("by-name").addEventListener("click", (e) => {
+    sortIcons((a, b) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()));
+});
+
+document.getElementById("by-kind").addEventListener("click", (e) => {
+    sortIcons((a, b) => {
+        const isFileA = a.id.includes("-file") ? 1 : 0;
+        const isFileB = b.id.includes("-file") ? 1 : 0;
+
+        return  isFileA - isFileB;
+    })
+})

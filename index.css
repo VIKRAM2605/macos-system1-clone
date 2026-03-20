@@ -15,6 +15,11 @@
     user-select: none;
 }
 
+.disabled {
+    opacity: 0.4 !important;
+    pointer-events: none !important;
+}
+
 /* my friend gave me this code below so don't ask why how it works */
 /* scanlines */
 body::before {
