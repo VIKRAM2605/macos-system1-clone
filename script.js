@@ -1075,3 +1075,48 @@ document.getElementById("system-folder-icon").addEventListener("dblclick", (e) =
     })
 
 })
+
+const tabs = ["about", "projects", "skills", "contact"];
+
+const displayModeForTabs = {
+    "about": "flex",
+    "projects": "block",
+    "skills": "block",
+    "contact": "block"
+};
+
+let sectionWidth = null;
+let sectionHeight = null;
+
+tabs.forEach(tab => {
+    document.getElementById(`tab-${tab}`).addEventListener("click", (e) => {
+        const aboutMeSec = document.getElementById("about-me-section");
+        if (!sectionWidth) {
+            sectionWidth = aboutMeSec.offsetWidth;
+            sectionHeight = aboutMeSec.offsetHeight;
+        }
+        tabs.forEach(t => {
+            document.getElementById(`content-${t}`).style.display = "none";
+        });
+        document.getElementById(`content-${tab}`).style.display = displayModeForTabs[tab];
+        aboutMeSec.style.width = sectionWidth + 'px';
+        aboutMeSec.style.height = sectionHeight + 'px';
+    })
+})
+
+//about myself section
+document.getElementById("about-me").addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    const aboutMeSec = document.getElementById("about-me-section");
+    aboutMeSec.style.setProperty("display", "block", "important");
+    sectionWidth = aboutMeSec.offsetWidth;
+    sectionHeight = aboutMeSec.offsetHeight;
+    activeWindows.push("about-me-section");
+    bringWindowToTop("about-me-section");
+
+    updateDeleteBtn();
+    updatePrintBtn();
+
+    document.activeElement.blur();
+})

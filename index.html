@@ -52,7 +52,7 @@
                 <li role="menu-item" tabindex="0" aria-haspopup="true">
                     Special
                     <ul role="menu">
-                        <li role="menu-item"><a href="#menu">Vikram Suresh</a></li>
+                        <li role="menu-item"><button id="about-me">Vikram Suresh</button></li>
                     </ul>
                 </li>
             </ul>
@@ -103,6 +103,71 @@
 
             <div class="window-pane flex! flex-row! flex-wrap gap-2 overflow-y-auto p-0! items-start content-start"
                 id="trash-list">
+            </div>
+        </div>
+
+        <div class="window fixed z-9999 w-fit h-fit" id="about-me-section" style="display: block !important;">
+            <div class="title-bar">
+                <button aria-label="Close" class="close"></button>
+                <h1 class="title">Vikram Suresh</h1>
+            </div>
+            <div class="details-bar">
+                <ul role="menu-bar">
+                    <li role="menu-item"><button id="tab-about" class="text-lg!">About Me</button></li>
+                    <li role="menu-item"><button id="tab-projects" class="text-lg!">Projects</button></li>
+                    <li role="menu-item"><button id="tab-skills" class="text-lg!">Skills</button></li>
+                    <li role="menu-item"><button id="tab-contact" class="text-lg!">Contact</button></li>
+                </ul>
+            </div>
+            <div class="window-pane overflow-y-auto p-5!">
+
+                <div id="content-about" class="flex flex-row gap-4">
+                    <img src="assets/Me/vikram1Bit.png" width="86" height="86" />
+                    <div>
+                        <p class="text-lg! font-bold">Vikram Suresh</p>
+                        <p class="text-sm!">B.Tech AI/ML @ Bannari Amman Institute of Technology</p>
+                        <p class="text-sm! mt-2">Game developer most beloved, Web developed. <br> Building things
+                            with Godot 4, HTML5 Canvas, and vanilla JS.</p>
+                    </div>
+                </div>
+
+                <div id="content-projects" style="display:none;">
+                    <p class="text-sm! font-bold mb-1">Projects</p>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                            &nbsp;
+                            <img src="assets/icons/hypercard.svg" width="16" height="16" />
+                            <span class="text-sm!"><a href="https://vikram2605.github.io/hackclub/" target="_blank">Cooking Sim</a></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            &nbsp;
+                            <img src="assets/icons/hypercard.svg" width="16" height="16" />
+                            <span class="text-sm!"><a href="https://vikram2605.github.io/racing_car_game/" target="_blank">Car Rinding</a></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            &nbsp;
+                            <img src="assets/icons/hypercard.svg" width="16" height="16" />
+                            <span class="text-sm!"><a href="https://vikram2605.itch.io/slime-island/" target="_blank">Top-down Godot 4 slime killer Game</a></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-skills" style="display:none;">
+                    <p class="text-sm! font-bold mb-1">Skills</p>
+                    <div class="flex flex-col gap-1 text-sm!">
+                        <span>&nbsp;&nbsp;◦ Godot 4 / GDScript / HTML5 Canvas / Vanilla JS</span>
+                        <span>&nbsp;&nbsp;◦ Java , C</span>
+                        <span>&nbsp;&nbsp;◦ Git / GitHub</span>
+                    </div>
+                </div>
+
+                <div id="content-contact" style="display:none;">
+                    <p class="text-sm! font-bold mb-1">Contact</p>
+                    <div class="flex flex-col gap-1 text-sm!">
+                        <span>&nbsp;&nbsp;GitHub: <a href="https://github.com/VIKRAM2605" target="_blank">github.com/VIKRAM2605</a></span>
+                        <span>&nbsp;&nbsp;Email: <a href="mailto:vikramhero26@gmail.com">vikramhero26@gmail.com</a></span>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="window fixed w-128 h-48 z-10" id="open-folder" style="display: none !important;">
