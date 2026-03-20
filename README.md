@@ -2,6 +2,8 @@
 A classsic/ retro based os. This is the System 1 Macintosh layout and icons and some feature represent the real Mactoish layoput and feature and some are implemented by me. Made with HTML,CSS,Tailwind and `system.css`. This project represent a basic Virtual 
 Machine looklike. Demo File is provided if you get lost.
 
+*(Note: Username: admin , Password: 1234)*
+
 *(Note: A "Demo" file is provided right on the desktop in case you get lost!)*
 
 *(Note: Internet is must as System.CSS and Tailwind.CSS uses api)*

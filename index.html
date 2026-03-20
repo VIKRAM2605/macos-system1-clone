@@ -1,12 +1,105 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Launching...</title>
+    <title>Login</title>
+    <link rel="stylesheet" href="https://unpkg.com/@sakun/system.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: var(--surface);
+        }
+
+        #root {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(2);
+            transform-origin: center center;
+        }
+    </style>
 </head>
+
 <body>
+    <div id="root">
+        <div class="modal-dialog outer-border">
+            <div class="inner-border center p-5! pl-10! pr-10!">
+                <div class="modal-contents">
+                    <h1 class="modal-text">Login with Credentials</h1>
+                    <form>
+                        <label for="text_email">Email</label><br>
+                        <input id="text_email" type="email" placeholder="admin" /><br>
+                        <label for="text_pwd">Password</label><br>
+                        <input id="text_pwd" type="password" placeholder="1234" /><br><br>
+                    </form>
+                    <section class="field-row" style="justify-content: flex-end">
+                        <button class="btn" style="width:95px;" onclick="login()">OK</button>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert-box h-fit! w-fit! fixed outer-border scale-down" style="display: none !important;">
+        <div class="inner-border">
+            <div class="alert-contents">
+                <section class="field-row" style="justify-content: flex-start">
+                    <div class="square">
+                        <img src="assets/icons/alert-face-exclam.svg" alt="!" width="32" height="32">
+                    </div>
+                    <p class="alert-text text-xl!" id="alert-text"></p>
+                </section>
+                <section class="field-row" style="justify-content: flex-end">
+                    <button class="btn" id="alert-okay">OK</button>
+                </section>
+            </div>
+        </div>
+    </div>
+
     <script>
-        window.open("main.html", "_blank");
-        window.close();
+        function login() {
+            const user = document.getElementById("text_email").value;
+            const pass = document.getElementById("text_pwd").value;
+            if (user === "admin" && pass === "1234") {
+                window.open("main.html", "_blank");
+                window.close();
+            } else {
+                alertBox("Invalid credentials");
+            }
+        }
+
+        function alertBox(content) {
+            const alertBox = document.querySelector(".alert-box");
+            const alertText = alertBox.querySelector(".alert-text");
+
+            alertText.textContent = content;
+
+            alertBox.style.visibility = "hidden";
+            alertBox.style.setProperty("display", "block", "important");
+
+            const boxW = alertBox.offsetWidth;
+            const boxH = alertBox.offsetHeight;
+
+            alertBox.style.left = (window.innerWidth / 2) - (boxW / 2) + 'px';
+            alertBox.style.top = (window.innerHeight / 2) - (boxH / 2) + 'px';
+
+            alertBox.style.zIndex = '9998';
+            alertBox.style.visibility = '';
+
+            document.getElementById("alert-okay").addEventListener("click", (e) => {
+                e.stopPropagation();
+                alertBox.style.setProperty("display", "none", "important");
+            });
+        }
     </script>
 </body>
+
 </html>
