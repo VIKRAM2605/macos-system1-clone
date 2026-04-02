@@ -35,7 +35,8 @@
                     File
                     <ul role="menu">
                         <li role="menu-item"><button id="open">Open</button></li>
-                        <li role="menu-item"><button id="new-file">New File</button></li>
+                        <li role="menu-item"><button id="new-file-btn">New File</button></li>
+                        <li role="menu-item"><button id="new-folder-btn">New Folder</button></li>
                         <li role="menu-item"><button id="close-win">Close</button></li>
                         <li role="menu-item"><button id="close-all-win">Close All</button></li>
                         <li role="menu-item"><button id="delete">Delete Current</button></li>
@@ -137,17 +138,20 @@
                         <div class="flex items-center gap-2">
                             &nbsp;
                             <img src="assets/icons/hypercard.svg" width="16" height="16" />
-                            <span class="text-sm!"><a href="https://vikram2605.github.io/hackclub/" target="_blank">Cooking Sim</a></span>
+                            <span class="text-sm!"><a href="https://vikram2605.github.io/hackclub/"
+                                    target="_blank">Cooking Sim</a></span>
                         </div>
                         <div class="flex items-center gap-2">
                             &nbsp;
                             <img src="assets/icons/hypercard.svg" width="16" height="16" />
-                            <span class="text-sm!"><a href="https://vikram2605.github.io/racing_car_game/" target="_blank">Car Rinding</a></span>
+                            <span class="text-sm!"><a href="https://vikram2605.github.io/racing_car_game/"
+                                    target="_blank">Car Rinding</a></span>
                         </div>
                         <div class="flex items-center gap-2">
                             &nbsp;
                             <img src="assets/icons/hypercard.svg" width="16" height="16" />
-                            <span class="text-sm!"><a href="https://vikram2605.itch.io/slime-island/" target="_blank">Top-down Godot 4 slime killer Game</a></span>
+                            <span class="text-sm!"><a href="https://vikram2605.itch.io/slime-island/"
+                                    target="_blank">Top-down Godot 4 slime killer Game</a></span>
                         </div>
                     </div>
                 </div>
@@ -164,8 +168,10 @@
                 <div id="content-contact" style="display:none;">
                     <p class="text-sm! font-bold mb-1">Contact</p>
                     <div class="flex flex-col gap-1 text-sm!">
-                        <span>&nbsp;&nbsp;GitHub: <a href="https://github.com/VIKRAM2605" target="_blank">github.com/VIKRAM2605</a></span>
-                        <span>&nbsp;&nbsp;Email: <a href="mailto:vikramhero26@gmail.com">vikramhero26@gmail.com</a></span>
+                        <span>&nbsp;&nbsp;GitHub: <a href="https://github.com/VIKRAM2605"
+                                target="_blank">github.com/VIKRAM2605</a></span>
+                        <span>&nbsp;&nbsp;Email: <a
+                                href="mailto:vikramhero26@gmail.com">vikramhero26@gmail.com</a></span>
                     </div>
                 </div>
             </div>
@@ -200,7 +206,7 @@
             <div class="window-pane flex-1 overflow-y-auto! min-h-0">
             </div>
         </div>
-        <div class="window scale-down fixed w-64 h-fit p-1 z-10" id="new-folder" style="display: none !important;">
+        <div class="window scale-down fixed w-64 h-fit p-1 z-10" id="new-file" style="display: none !important;">
             <div class="title-bar">
                 <button aria-label="Close" class="close"></button>
                 <h1 class="title">New File</h1>
@@ -211,7 +217,7 @@
             <div class="modeless-dialog">
                 <section class="field-row" style="justify-content: flex-start">
                     <label for="file-create" class="modeless-text">File-Name:</label>
-                    <input id="file-create" type="text" class="flex-1" placeholder="" />
+                    <input id="file-create" type="text" class="flex-1" placeholder="file" />
                 </section>
                 <section class="field-row pt-5" style="justify-content: flex-end">
                     <button class="btn" id="cancel">Cancel</button>
@@ -219,6 +225,28 @@
                 </section>
             </div>
         </div>
+
+        <!-- folder -->
+        <div class="window scale-down fixed w-64 h-fit p-1 z-10" id="new-folder" style="display: none !important;">
+            <div class="title-bar">
+                <button aria-label="Close" class="close"></button>
+                <h1 class="title">New Folder</h1>
+                <button aria-label="Resize" disabled class="hidden"></button>
+            </div>
+            <div class="separator"></div>
+
+            <div class="modeless-dialog">
+                <section class="field-row" style="justify-content: flex-start">
+                    <label for="folder-create" class="modeless-text">Folder-Name:</label>
+                    <input id="folder-create" type="text" class="flex-1" placeholder="folder" />
+                </section>
+                <section class="field-row pt-5" style="justify-content: flex-end">
+                    <button class="btn" id="cancel">Cancel</button>
+                    <button class="btn" id="create-folder" style="width:95px; ">Create</button>
+                </section>
+            </div>
+        </div>
+
         <div class="alert-box h-fit! w-fit! fixed outer-border scale-down" style="display: none !important;">
             <div class="inner-border">
                 <div class="alert-contents" style="padding-left: 30px; padding-right:20px;">

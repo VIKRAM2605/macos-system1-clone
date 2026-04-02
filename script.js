@@ -19,6 +19,8 @@ setActiveFolder(null);
 
 let trashedFiles = [];
 
+const reserved = ["trash", "Trash", "system", "System", "Guide", "instruction-file", "new", "New", "open"]
+
 function init() {
     const homeEl = document.querySelector(".home");
     // Use offset properties to get the logical (unscaled) dimensions
@@ -194,6 +196,12 @@ function init() {
             return;
         }
 
+        if (reserved.includes(value)) {
+            alertBox(`"${value}" is a reserved system name. Try a different one.`);
+            input.value = "";
+            return;
+        }
+
         const fileExistingCheck = files.find(file => file.id === `${value}-file`);
         if (fileExistingCheck) {
             alertBox("File Already Exists.");
@@ -204,6 +212,7 @@ function init() {
         input.value = "";
         createIcons(`${value}-file-icon`, "assets/icons/hypercard.svg", value);
         createWindow(`${value}-file`, value, "true");
+        input.closest("#new-file").style.setProperty("display", "none", "important");
     });
 
     //ok button to work for alert box
@@ -264,6 +273,18 @@ function init() {
     const demoIdx = activeWindows.indexOf("instruction-file");
     if (demoIdx === -1) activeWindows.push("instruction-file");
     bringWindowToTop("instruction-file");
+
+    //load every files and folder for verifaction when creating new file/folder
+    // document.querySelectorAll('[id$="-icon"]').forEach(icon=>{
+    //     const win = icon.id.replace("-icon","");
+    //     files.push({
+    //         id:win,
+    //         label:icon.querySelector("p").textContent,
+    //         iconSrc:icon.querySelector("img").src
+    //     })
+    // })
+
+    console.log(files);
 }
 
 function dragElementWindows(element) {
@@ -517,13 +538,13 @@ document.getElementById("open").addEventListener('click', (e) => {
     document.activeElement.blur();
 });
 
-document.getElementById("new-file").addEventListener('click', (e) => {
-    const win = document.getElementById("new-folder");
+document.getElementById("new-file-btn").addEventListener('click', (e) => {
+    const win = document.getElementById("new-file");
     win.style.setProperty('display', 'block', 'important');
 
     document.activeElement.blur();
 
-    bringWindowToTop("new-folder");
+    bringWindowToTop("new-file");
 
     win.style.top = (window.innerHeight / scale / 2) - (win.offsetHeight / 2) + 'px';
     win.style.left = (window.innerWidth / scale / 2) - (win.offsetWidth / 2) + 'px';
@@ -587,8 +608,8 @@ function createIcons(id, iconSrc, label) {
             if (title) title.textContent = labelP.textContent;
 
             const panel = win.querySelector(".window-pane");
-            if (panel) panel.contentEditable = "true";
-            panel.focus();
+            if (panel && panel.contentEditable !== "true") panel.contentEditable = "false";
+            if (panel && panel.contentEditable === "true") panel.focus();
 
             const idThere = activeWindows.indexOf(winId);
             if (idThere === -1) activeWindows.push(winId);
@@ -1141,4 +1162,47 @@ document.getElementById("about-me").addEventListener("click", (e) => {
     updatePrintBtn();
 
     document.activeElement.blur();
+});
+
+// for creating new folder structure here in this chunk of code
+document.getElementById("new-folder-btn").addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const win = document.getElementById("new-folder");
+    win.style.setProperty("display", "block", "important");
+
+    bringWindowToTop("new-folder");
+
+    document.activeElement.blur();
+});
+
+document.getElementById("create-folder").addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const input = document.getElementById("folder-create");
+
+    if (input.value.trim() === "") {
+        alertBox("Can not be Blank. Enter Name!");
+        return;
+    }
+
+    if (reserved.includes(input.value.trim())) {
+        alertBox(`"${input.value.trim()}" is Reserved For System Use. Try a Different One.`);
+        return;
+    }
+
+    const existingFolder = files.find(file => file.id === `${input.value.trim()}-folder`);
+    if (existingFolder) {
+        alertBox("Folder Already Exists.");
+        input.value = "";
+        return;
+    }
+
+    createIcons(`${input.value.trim()}-folder-icon`, "assets/icons/floppy-disk-icon.svg", input.value.trim());
+    createWindow(`${input.value.trim()}-folder`, input.value.trim(), "false");
+    document.getElementById("new-folder").style.setProperty("display", "none", "important");
 })
+
+//storing every state that user has opened/created in the os in the lcal storage
