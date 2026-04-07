@@ -20,7 +20,7 @@ setActiveFolder(null);
 let trashedFiles = [];
 
 const reserved = ["trash", "Trash", "system", "System", "Guide", "instruction-file", "new", "New", "open"];
-const folderChildFiles = [];
+const folderChildFiles = {};
 
 function init() {
     const homeEl = document.querySelector(".home");
@@ -82,6 +82,11 @@ function init() {
         if (!e.target.closest('.homeIcons')) {
             document.querySelectorAll('.homeIcons').forEach((element) => {
                 element.style.filter = '';
+            })
+        }
+        if (!e.target.closest('.folderIcons')) {
+            document.querySelectorAll(".folderIcons").forEach((e) => {
+                e.style.filter = '';
             })
         }
     });
@@ -284,6 +289,8 @@ function init() {
     //         iconSrc:icon.querySelector("img").src
     //     })
     // })
+
+    startTutorial();
 
     console.log(files);
 }
@@ -551,7 +558,7 @@ document.getElementById("new-file-btn").addEventListener('click', (e) => {
     win.style.left = (window.innerWidth / scale / 2) - (win.offsetWidth / 2) + 'px';
 });
 
-function createIcons(id, iconSrc, label) {
+function createIcons(id, iconSrc, label, child = "false", root = null) {
     const div = document.createElement("div");
     div.id = id;
     div.className = "homeIcons";
@@ -564,7 +571,9 @@ function createIcons(id, iconSrc, label) {
         <p class="text-sm! w-fit font-normal bg-white text-black">${label}</p>
     </div>  
     `;
-    document.querySelector(".home").appendChild(div);
+    if (child === "false") {
+        document.querySelector(".home").appendChild(div);
+    }
 
     const labelP = div.querySelector("p");
 
@@ -577,24 +586,26 @@ function createIcons(id, iconSrc, label) {
 
     files.push({ id: idFile, label: label, iconSrc: iconSrc });
 
-    div.style.position = "absolute";
-    div.style.left = (col * iconSize) + "px";
-    div.style.top = (row * iconSize) + "px";
+    if (child === "false") {
 
-    row++;
+        div.style.position = "absolute";
+        div.style.left = (col * iconSize) + "px";
+        div.style.top = (row * iconSize) + "px";
 
-    if (row >= iconsPerCol) {
-        row = 0;
-        col++;
+        row++;
+
+        if (row >= iconsPerCol) {
+            row = 0;
+            col++;
+        }
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll(".homeIcons").forEach(icon => icon.style.filter = '');
+            div.style.filter = "invert(1)";
+        })
+
+        dragElement(div);
     }
-
-    div.addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.querySelectorAll(".homeIcons").forEach(icon => icon.style.filter = '');
-        div.style.filter = "invert(1)";
-    })
-
-    dragElement(div);
 
     div.addEventListener('dblclick', (e) => {
         e.stopPropagation();
@@ -612,6 +623,10 @@ function createIcons(id, iconSrc, label) {
             if (panel && panel.contentEditable !== "true") panel.contentEditable = "false";
             if (panel && panel.contentEditable === "true") panel.focus();
 
+            if (winId.includes("-folder")) {
+                refreshFolder(winId);
+            }
+
             const idThere = activeWindows.indexOf(winId);
             if (idThere === -1) activeWindows.push(winId);
             updateDeleteBtn();
@@ -626,6 +641,62 @@ function createIcons(id, iconSrc, label) {
         }
         console.log(activeWindows);
     });
+}
+
+function refreshFolder(folderId) {
+
+    const folder = document.getElementById(folderId);
+    const panel = folder.querySelector(".window-pane");
+
+    panel.style.cssText = "display:flex!important; flex-wrap:wrap; align-content:flex-start; gap:4px; padding:10px;";
+
+    panel.innerHTML = "";
+
+    if (!folderChildFiles[folderId]) {
+        folderChildFiles[folderId] = [];
+    }
+
+    folderChildFiles[folderId].forEach(file => {
+        const iconDiv = document.createElement('div');
+        iconDiv.id = file.icon;
+        iconDiv.className = "folderIcons flex items-center gap-2 cursor-pointer px-1";
+
+        iconDiv.innerHTML = `
+                        <img src = "${file.iconSrc}" width="16" height="16" draggable="false"/>
+                        <p class="text-sm! w-fit font-noraml bg-white text-black">${file.value}</p>
+                    `;
+
+        panel.appendChild(iconDiv);
+
+        iconDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            document.querySelectorAll(".folderIcons").forEach(icon => {
+                icon.style.filter = "";
+            });
+            iconDiv.style.filter = "invert(1)";
+        })
+
+        iconDiv.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const childWinId = iconDiv.id.replace("-icon", "");
+            const childWin = document.getElementById(childWinId);
+            if (childWin) {
+                childWin.style.setProperty("display", "flex", "important");
+                bringWindowToTop(childWinId);
+
+                const panelChild = childWin.querySelector(".window-pane");
+
+                if (panelChild && panelChild.contentEditable === "true") {
+                    setTimeout(() => {
+                        panelChild.focus();
+                    }, 10);
+                }
+            }
+        })
+    })
 }
 
 function editIconNames(label, div) {
@@ -801,6 +872,7 @@ function createWindow(id, name, editable = 'false') {
     }
 
     if (id.includes("-folder")) {
+
         const detailsBar = document.createElement('div');
         detailsBar.id = id + '-detailsBar';
         detailsBar.className = "details-bar";
@@ -818,16 +890,40 @@ function createWindow(id, name, editable = 'false') {
         detailsBar.appendChild(inputBox);
         detailsBar.appendChild(createBtn);
 
-        createBtn.addEventListener("click",(e)=>{
-            const fieldId = createBtn.id.replace("-createFileBtn","-createFileField");
+        createBtn.addEventListener("click", (e) => {
+            const fieldId = createBtn.id.replace("-createFileBtn", "-createFileField");
             const field = document.getElementById(fieldId);
             const value = field.value.trim();
 
-            if(value){
-                createIcons(`${value}-file-icon`,"assets/icons/hypercard.svg",value);
-                createWindow(`${value}-file`,value,"true");
+            if (value) {
+
+                if (!folderChildFiles[id]) {
+                    folderChildFiles[id] = [];
+                }
+
+                const isThere = folderChildFiles[id].find(file => file.icon === `${value}FolderChild-file-icon`);
+                if (isThere) {
+                    alertBox("A File With The Same Name Already Exists Here.");
+                    field.value = "";
+                    return;
+                }
             }
-            else{
+
+            if (value) {
+                folderChildFiles[id].push(
+                    {
+                        icon: `${value}FolderChild-file-icon`,
+                        iconSrc: "assets/icons/hypercard.svg",
+                        value: value
+                    });
+                createIcons(`${value}FolderChild-file-icon`, "assets/icons/hypercard.svg", value, "true", id);
+                createWindow(`${value}FolderChild-file`, value, "true");
+
+                refreshFolder(id);
+
+                field.value = "";
+            }
+            else {
                 alertBox("Enter some File Name To Proceed.")
             }
         })
@@ -1252,3 +1348,156 @@ document.getElementById("create-folder").addEventListener("click", (e) => {
 // making the folder icon to accept files input by dragging
 
 //storing every state that user has opened/created in the os in the lcal storage
+
+
+// tutorial for the os 
+
+const tutorialSteps = [
+    {
+        title: "Welcome to System 1",
+        text: "This Quick Tour Will Show You The Basics.",
+        target: null
+    },
+    {
+        title: "Desktop Icons",
+        text: "Click On Guide Icon to select it. Once selected it will invert to show you that you have selected it.",
+        target: "#guide-file-icon"
+    },
+    {
+        title: "Opening Files",
+        text: "Double Click on the Guide File to open it. When double clicked it will pop up the respective window to work on.",
+        target: "#guide-file-icon"
+    },
+    {
+        title: "Note",
+        text: "Files You create is editable. Default Files Can not be editted.",
+        target: "#guide-file"
+    },
+    {
+        title: "Move Window",
+        text: "You Can Move the Window By Clicking the head and dragging it.",
+        target: "#guide-file .title-bar"
+    },
+    {
+        title: "Resize",
+        text: "Most windows Have Resize Option. When Clicked It will make the window to take Full width and height. Click the Top Left Button.",
+        target: "#guide-file .resize"
+    },
+    {
+        title: "Click again to revert the size",
+        text: "Click again to make the window height and width back to normal",
+        target: "#guide-file .resize"
+    },
+    {
+        title: "Close the Window",
+        text: "Click on the Top Right Button to Close the Window.",
+        target: "#guide-file .close"
+    },
+    {
+        title: "Move Icons Around",
+        text: "By clicking and Moving the cursor The Icon gets Moved while Moving the icon's color gets inverted to show that it is currently moving.",
+        target: "#guide-file-icon"
+    },
+    {
+        title: "Click On File Tab.",
+        text: "Click on the file tab located at the Tools section.",
+        target: "#file-tab"
+    },
+    {
+        title: "Click on the New File.",
+        text: "Click on the new file option to create new files in the desktop. located under File tab in the header.",
+        target: "#new-file-btn"
+    },
+    {
+        title: "Create New File",
+        text: "Create a new file by typing a file name in. When entered,click on create to create a file.",
+        target: "#file-create"
+    },
+    {
+        title: "Note",
+        text: "Once a file is created it can be seen in desktop.",
+        target: null
+    },
+    {
+        title: "Create New Folder",
+        text: "Once again it is similar to creating Files. Click on New Folder option under File tab in the header.",
+        target: "#new-folder-btn"
+    },
+    {
+        title: "Create New Folder",
+        text: "Create a new Folder by typing a Folder name in. When entered,click on create to create a folder.",
+        target: "#folder-create"
+    },
+    {
+        title: "Delete File/Folder",
+        text: "You can delete a File/Folder By dragging it and dropping on top of the trash icon.",
+        target: "#trash-folder-icon"
+    },
+    {
+        title: "Double Click On Trash Icon",
+        text: "Double click on trash icon to open the trash folder window.",
+        target: "#trash-folder"
+    },
+    {
+        title: "Restore File/Folder",
+        text: "Double Click On deleted Files to Restore Them Back.",
+        target: null
+    },
+    {
+        title: "Easter",
+        text: "Read the Guide File to Find the Easter.",
+        target: null
+    },
+    {
+        title: "You're all Set!",
+        text: "I couldn't Cover all the Topics in as i would take More than 10mins to go through all. But Bacis is done. Keep wandering to find all features.",
+        target: null
+    }
+]
+
+//inject text to make the tutorial work
+
+let counter = 0;
+
+function startTutorial() {
+    const area = document.createElement("div");
+    area.id = "tutorial";
+    area.className = "border-2 border-black";
+    area.style.bottom = "0px";
+    area.style.width = "100%";
+    area.style.height = "fit-content";
+    area.style.padding = "20px";
+    area.style.display = "flex";
+    area.style.gap = "20px";
+    area.style.alingItems = "center";
+    area.style.justifyContent = "center";
+
+    const mascot = document.createElement("image");
+    mascot.src = "assets/icons/clarus-icon.svg";
+    mascot.style.width = "32px";
+    mascot.style.height = "32px";
+
+    mascot.className = "border-2 border-black paddind-2";
+
+    area.appendChild(mascot);
+
+    const title = tutorialSteps[counter].title;
+    const text = tutorialSteps[counter].text;
+    const target = tutorialSteps[counter].target;
+
+    const textBox = document.createElement("div");
+    textBox.appendChild(title);
+    textBox.appendChild(text);
+
+    console.log(title,text,target);
+}
+
+function getNextStep(){
+    counter+=1;
+    if(counter > tutorialSteps.length){
+        const tutorialBox = document.getElementById("tutorial");
+        tutorialBox.style.setProperty("display","none","important");
+        return;
+    }
+    return tutorialSteps[counter];
+}
