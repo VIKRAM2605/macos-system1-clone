@@ -1398,7 +1398,7 @@ const tutorialSteps = [
     },
     {
         title: "Resize",
-        text: "Most windows Have Resize Option. When Clicked It will make the window to take Full width and height. Click the Top Left Button.",
+        text: "Most windows Have Resize Option. When Clicked It will make the window to take Full width and height. Click the Top 'Right' Button.",
         target: ["#instruction-file .resize"]
     },
     {
@@ -1408,7 +1408,7 @@ const tutorialSteps = [
     },
     {
         title: "Close the Window",
-        text: "Click on the Top Right Button to Close the Window.",
+        text: "Click on the Top 'Left' Button to Close the Window.",
         target: ["#instruction-file .close"]
     },
     {
@@ -1427,14 +1427,19 @@ const tutorialSteps = [
         target: ["#new-file-btn"]
     },
     {
-        title: ["Create New File"],
+        title: "Create New File",
         text: "Create a new file by typing a file name in. When entered,click on create to create a file.",
-        target: ["#file-create", "#create-file"]
+        target: ["#file-create", "#create"]
     },
     {
         title: "Note",
         text: "Once a file is created it can be seen in desktop.",
         target: null
+    },
+    {
+        title: "Click on File Tab",
+        text: "Click on the file tab located at the Tools sections",
+        target:["#file-tab"]
     },
     {
         title: "Create New Folder",
@@ -1499,7 +1504,14 @@ function startTutorial() {
 
         if (e.target.closest("#tutorial")) return;
 
-        const matchingId = currentTargetId.filter(id => e.target.closest(id));
+        const matchingId = currentTargetId.filter(id => {
+            const isClosest = e.target.closest(id);
+            const isInside = e.target.querySelector && e.target.querySelector(id);
+            console.log(isClosest,isInside,id);
+            return isClosest || isInside;
+        });
+
+        console.log(matchingId);
 
         if (matchingId.length === 0) {
             e.stopPropagation();
@@ -1673,7 +1685,7 @@ function typeWord(target, text, onComplete) {
                 onComplete();
             }
         }
-    }, 200)
+    }, 100)
 }
 
 function getNextStep() {
@@ -1706,7 +1718,7 @@ function focusTarget() {
         overlay.style.height = "100%";
         overlay.style.background = "rgba(0,0,0,0.7)";
         overlay.style.zIndex = "9997";
-        overlay.style.pointerEvents = "auto";
+        overlay.style.pointerEvents = "none";
 
         document.body.appendChild(overlay);
     };
@@ -1728,9 +1740,9 @@ function focusTarget() {
             currentTarget.push(target);
 
             const parentWindow = target.closest(".window");
-            if(parentWindow && parentWindow !== target){
+            if (parentWindow && parentWindow !== target) {
                 parentWindow.style.zIndex = "9998";
-                currentTarget.push(target);
+                currentTarget.push(parentWindow);
             }
         } else {
             console.log("cant find it:", targetId);
@@ -1738,3 +1750,6 @@ function focusTarget() {
     });
 
 }
+
+// bug noting : When tutorial is playing sometimes the click the New file/folder step gets omitted leading to permanent stall.
+// and also the file tab isnt getting higlighted need to check this out in the morning.
