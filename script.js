@@ -275,10 +275,10 @@ function init() {
 `;
 
     const demoWin = document.getElementById("instruction-file");
-    demoWin.style.setProperty("display", "flex", "important");
-    const demoIdx = activeWindows.indexOf("instruction-file");
-    if (demoIdx === -1) activeWindows.push("instruction-file");
-    bringWindowToTop("instruction-file");
+    // demoWin.style.setProperty("display", "flex", "important");
+    // const demoIdx = activeWindows.indexOf("instruction-file");
+    // if (demoIdx === -1) activeWindows.push("instruction-file");
+    // bringWindowToTop("instruction-file");
 
     //load every files and folder for verifaction when creating new file/folder
     // document.querySelectorAll('[id$="-icon"]').forEach(icon=>{
@@ -1361,57 +1361,57 @@ const tutorialSteps = [
     {
         title: "Desktop Icons",
         text: "Click On Guide Icon to select it. Once selected it will invert to show you that you have selected it.",
-        target: "#guide-file-icon"
+        target: ["#guide-file-icon"]
     },
     {
         title: "Opening Files",
         text: "Double Click on the Guide File to open it. When double clicked it will pop up the respective window to work on.",
-        target: "#guide-file-icon"
+        target: ["#guide-file-icon"]
     },
     {
         title: "Note",
         text: "Files You create is editable. Default Files Can not be editted.",
-        target: "#guide-file"
+        target: ["#guide-file"]
     },
     {
         title: "Move Window",
         text: "You Can Move the Window By Clicking the head and dragging it.",
-        target: "#guide-file .title-bar"
+        target: ["#guide-file", ".title-bar"]
     },
     {
         title: "Resize",
         text: "Most windows Have Resize Option. When Clicked It will make the window to take Full width and height. Click the Top Left Button.",
-        target: "#guide-file .resize"
+        target: ["#guide-file", ".resize"]
     },
     {
         title: "Click again to revert the size",
         text: "Click again to make the window height and width back to normal",
-        target: "#guide-file .resize"
+        target: ["#guide-file", ".resize"]
     },
     {
         title: "Close the Window",
         text: "Click on the Top Right Button to Close the Window.",
-        target: "#guide-file .close"
+        target: ["#guide-file", ".close"]
     },
     {
         title: "Move Icons Around",
         text: "By clicking and Moving the cursor The Icon gets Moved while Moving the icon's color gets inverted to show that it is currently moving.",
-        target: "#guide-file-icon"
+        target: ["#guide-file-icon"]
     },
     {
         title: "Click On File Tab.",
         text: "Click on the file tab located at the Tools section.",
-        target: "#file-tab"
+        target: ["#file-tab"]
     },
     {
         title: "Click on the New File.",
         text: "Click on the new file option to create new files in the desktop. located under File tab in the header.",
-        target: "#new-file-btn"
+        target: ["#new-file-btn"]
     },
     {
-        title: "Create New File",
+        title: ["Create New File"],
         text: "Create a new file by typing a file name in. When entered,click on create to create a file.",
-        target: "#file-create"
+        target: ["#file-create", "create-file"]
     },
     {
         title: "Note",
@@ -1421,22 +1421,22 @@ const tutorialSteps = [
     {
         title: "Create New Folder",
         text: "Once again it is similar to creating Files. Click on New Folder option under File tab in the header.",
-        target: "#new-folder-btn"
+        target: ["#new-folder-btn"]
     },
     {
         title: "Create New Folder",
         text: "Create a new Folder by typing a Folder name in. When entered,click on create to create a folder.",
-        target: "#folder-create"
+        target: ["#folder-create", "create-folder"]
     },
     {
         title: "Delete File/Folder",
         text: "You can delete a File/Folder By dragging it and dropping on top of the trash icon.",
-        target: "#trash-folder-icon"
+        target: ["#trash-folder-icon", "#guide-file-icon"]
     },
     {
         title: "Double Click On Trash Icon",
         text: "Double click on trash icon to open the trash folder window.",
-        target: "#trash-folder"
+        target: ["#trash-folder", "#guide-file-icon"]
     },
     {
         title: "Restore File/Folder",
@@ -1458,46 +1458,156 @@ const tutorialSteps = [
 //inject text to make the tutorial work
 
 let counter = 0;
+let actionDone = false;
+let currentTarget = [];
+let currentTargetId = [];
+let overlay = null;
 
 function startTutorial() {
     const area = document.createElement("div");
     area.id = "tutorial";
-    area.className = "border-2 border-black";
+    area.style.position = "fixed";
     area.style.bottom = "0px";
     area.style.width = "100%";
     area.style.height = "fit-content";
     area.style.padding = "20px";
     area.style.display = "flex";
+    area.style.flexDirection = "row";
     area.style.gap = "20px";
-    area.style.alingItems = "center";
-    area.style.justifyContent = "center";
+    area.style.alignItems = "center";
+    area.style.zIndex = "9999";
+    area.style.borderTop = "2px solid black";
+    // area.style.background = "white"
 
-    const mascot = document.createElement("image");
+    const mascot = document.createElement("img");
     mascot.src = "assets/icons/clarus-icon.svg";
-    mascot.style.width = "32px";
-    mascot.style.height = "32px";
+    mascot.style.width = "58px";
+    mascot.style.height = "58px";
 
-    mascot.className = "border-2 border-black paddind-2";
+    mascot.className = "border-2 border-black p-2";
 
     area.appendChild(mascot);
 
-    const title = tutorialSteps[counter].title;
-    const text = tutorialSteps[counter].text;
-    const target = tutorialSteps[counter].target;
+    const content = getNextStep();
+
+    const title = document.createElement("div");
+    title.id = "tutorial-title"
+
+    const text = document.createElement("div");
+    text.id = "tutorial-text";
+    text.className = "text-sm!"
 
     const textBox = document.createElement("div");
     textBox.appendChild(title);
     textBox.appendChild(text);
 
-    console.log(title,text,target);
+    let skipBtn;
+    skipBtn = document.createElement('button');
+    skipBtn.id = "skip"
+    skipBtn.innerText = "Click to continue...";
+    skipBtn.style.fontSize = "10px";
+    skipBtn.style.height = "fit-content";
+    skipBtn.style.color = "grey";
+    skipBtn.style.setProperty("display", "none", "important");
+
+    textBox.appendChild(skipBtn);
+
+    skipBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        title.innerText = "";
+        text.innerText = "";
+
+        const data = getNextStep();
+        playText(data);
+    })
+
+    area.appendChild(textBox);
+
+    document.getElementById("after-loading").appendChild(area);
+
+    playText(content);
+    // typeWord(title, content.title, null);
+    // typeWord(text, content.text, () => { if (currentTargetId) { skipBtn.style.setProperty("display", "none", "important") } else { skipBtn.style.setProperty("display", "block", "important") } })
+
+    console.log(title, text, currentTargetId);
 }
 
-function getNextStep(){
-    counter+=1;
-    if(counter > tutorialSteps.length){
+function playText(content) {
+    if (!content) return;
+
+    currentTargetId = content.target;
+
+    document.getElementById("skip").style.setProperty("display", "none", "important");
+
+    typeWord(document.getElementById("tutorial-title"), content.title, () => {
+        typeWord(document.getElementById("tutorial-text"), content.text, () => {
+            setTimeout(() => {
+                if (content.target) {
+                    document.getElementById("skip").style.setProperty("display", "none", "important");
+                } else {
+                    document.getElementById("skip").style.setProperty("display", "block", "important");
+                }
+            },1000)
+        })
+    })
+}
+
+function typeWord(target, text, onComplete) {
+    if (target.typingInterval) clearInterval(target.typingInterval);
+
+    const words = text.split(" ");
+    let i = 0;
+    target.innerText = "";
+
+    target.typingInterval = setInterval(() => {
+        target.innerText += (i == 0 ? "" : " ") + words[i];
+        i++;
+        if (i >= words.length) {
+            clearInterval(target.typingInterval);
+            target.typingInterval = null;
+            if (onComplete) {
+                onComplete();
+            }
+        }
+    }, 200)
+}
+
+function getNextStep() {
+    if (counter >= tutorialSteps.length) {
         const tutorialBox = document.getElementById("tutorial");
-        tutorialBox.style.setProperty("display","none","important");
+        tutorialBox.style.setProperty("display", "none", "important");
         return;
     }
-    return tutorialSteps[counter];
+    return tutorialSteps[counter++];
+}
+
+function focusTarget() {
+
+    currentTarget.forEach(target => {
+        target.style.position = "";
+        target.style.zIndex = '';
+    });
+
+    currentTarget = [];
+
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.background = "rgba(0,0,0,0.7)";
+        overlay.style.zIndex = "9997";
+        overlay.style.pointerEvents = "none";
+        document.body.appendChild(overlay);
+    };
+
+    overlay.style.setProperty("display", "block", "important");
+
+    currentTargetId.forEach(targetId => {
+        const target = document.getElementById(targetId);
+        target.style.position = "relative";
+        target.style.zIndex = "9998";
+        currentTarget.push(target);
+    })
 }
