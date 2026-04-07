@@ -348,6 +348,23 @@ function dragElementWindows(element) {
     function stopDragging() {
         document.onmouseup = null;
         document.onmousemove = null;
+
+        if (isTutorialActive && currentTargetId) {
+            currentTargetId.forEach(id => {
+                if (element.matches(id) || element.querySelector(id)) {
+                    if (!clickedTargets.includes(id)) {
+                        clickedTargets.push(id);
+                    }
+                }
+            });
+            if (clickedTargets.length === currentTargetId.length) {
+                document.getElementById("tutorial-title").innerText = "";
+                document.getElementById("tutorial-text").innerText = "";
+
+                const content = getNextStep();
+                playText(content);
+            }
+        }
     }
 };
 
@@ -780,6 +797,7 @@ function bringWindowToTop(winId) {
     activeWindows.push(winId);
     activeWindows.forEach((id, index) => {
         const win = document.getElementById(id);
+        if (win.style.zIndex === "9998") return;
         if (win) win.style.zIndex = (100 + index).toString();
     });
 
@@ -1361,42 +1379,42 @@ const tutorialSteps = [
     {
         title: "Desktop Icons",
         text: "Click On Guide Icon to select it. Once selected it will invert to show you that you have selected it.",
-        target: ["#guide-file-icon"]
+        target: ["#instruction-file-icon"]
     },
     {
         title: "Opening Files",
         text: "Double Click on the Guide File to open it. When double clicked it will pop up the respective window to work on.",
-        target: ["#guide-file-icon"]
+        target: ["#instruction-file-icon"]
     },
     {
         title: "Note",
         text: "Files You create is editable. Default Files Can not be editted.",
-        target: ["#guide-file"]
+        target: ["#instruction-file"]
     },
     {
         title: "Move Window",
         text: "You Can Move the Window By Clicking the head and dragging it.",
-        target: ["#guide-file", ".title-bar"]
+        target: ["#instruction-file .title-bar"]
     },
     {
         title: "Resize",
         text: "Most windows Have Resize Option. When Clicked It will make the window to take Full width and height. Click the Top Left Button.",
-        target: ["#guide-file", ".resize"]
+        target: ["#instruction-file .resize"]
     },
     {
         title: "Click again to revert the size",
         text: "Click again to make the window height and width back to normal",
-        target: ["#guide-file", ".resize"]
+        target: ["#instruction-file .resize"]
     },
     {
         title: "Close the Window",
         text: "Click on the Top Right Button to Close the Window.",
-        target: ["#guide-file", ".close"]
+        target: ["#instruction-file .close"]
     },
     {
         title: "Move Icons Around",
         text: "By clicking and Moving the cursor The Icon gets Moved while Moving the icon's color gets inverted to show that it is currently moving.",
-        target: ["#guide-file-icon"]
+        target: ["#instruction-file-icon"]
     },
     {
         title: "Click On File Tab.",
@@ -1411,7 +1429,7 @@ const tutorialSteps = [
     {
         title: ["Create New File"],
         text: "Create a new file by typing a file name in. When entered,click on create to create a file.",
-        target: ["#file-create", "create-file"]
+        target: ["#file-create", "#create-file"]
     },
     {
         title: "Note",
@@ -1426,7 +1444,7 @@ const tutorialSteps = [
     {
         title: "Create New Folder",
         text: "Create a new Folder by typing a Folder name in. When entered,click on create to create a folder.",
-        target: ["#folder-create", "create-folder"]
+        target: ["#folder-create", "#create-folder"]
     },
     {
         title: "Delete File/Folder",
@@ -1458,12 +1476,85 @@ const tutorialSteps = [
 //inject text to make the tutorial work
 
 let counter = 0;
-let actionDone = false;
+let isTyping = false;
 let currentTarget = [];
 let currentTargetId = [];
 let overlay = null;
+let isTutorialActive = false;
+let clickedTargets = [];
 
 function startTutorial() {
+    isTutorialActive = true;
+
+    document.body.addEventListener("click", (e) => {
+        if (!currentTargetId || currentTargetId.length === 0) return;
+
+        if (!isTutorialActive) return;
+
+        if (isTyping) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+
+        if (e.target.closest("#tutorial")) return;
+
+        const matchingId = currentTargetId.filter(id => e.target.closest(id));
+
+        if (matchingId.length === 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+
+        matchingId.forEach(id => {
+            if (!clickedTargets.includes(id)) {
+                clickedTargets.push(id);
+            }
+        })
+
+        if (clickedTargets.length === currentTargetId.length) {
+            setTimeout(() => {
+                document.getElementById("tutorial-title").innerText = "";
+                document.getElementById("tutorial-text").innerText = "";
+                const content = getNextStep();
+                playText(content);
+            }, 500)
+        }
+    }, true);
+
+    document.body.addEventListener("dblclick", (e) => {
+        if (!isTutorialActive) return;
+        if (!currentTargetId || currentTargetId.length === 0) return;
+        if (isTyping) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+        if (e.target.closest("#tutorial")) return;
+
+        const clickedId = currentTargetId.find(id => e.target.closest(id));
+
+        if (!clickedId) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+
+        if (!clickedTargets.includes(clickedId)) {
+            clickedTargets.push(clickedId);
+
+            if (clickedTargets.length === currentTarget.length) {
+                setTimeout(() => {
+                    document.getElementById("tutorial-title").innerText = "";
+                    document.getElementById("tutorial-text").innerText = "";
+                    const content = getNextStep();
+                    playText(content);
+                }, 500)
+            }
+        }
+    }, true)
+
     const area = document.createElement("div");
     area.id = "tutorial";
     area.style.position = "fixed";
@@ -1477,7 +1568,7 @@ function startTutorial() {
     area.style.alignItems = "center";
     area.style.zIndex = "9999";
     area.style.borderTop = "2px solid black";
-    // area.style.background = "white"
+    area.style.background = "white"
 
     const mascot = document.createElement("img");
     mascot.src = "assets/icons/clarus-icon.svg";
@@ -1528,7 +1619,7 @@ function startTutorial() {
     document.getElementById("after-loading").appendChild(area);
 
     playText(content);
-    // typeWord(title, content.title, null);
+    // typeWord(title, 
     // typeWord(text, content.text, () => { if (currentTargetId) { skipBtn.style.setProperty("display", "none", "important") } else { skipBtn.style.setProperty("display", "block", "important") } })
 
     console.log(title, text, currentTargetId);
@@ -1538,19 +1629,29 @@ function playText(content) {
     if (!content) return;
 
     currentTargetId = content.target;
+    clickedTargets = [];
+
+    isTyping = true;
+
+    focusTarget();
 
     document.getElementById("skip").style.setProperty("display", "none", "important");
 
     typeWord(document.getElementById("tutorial-title"), content.title, () => {
-        typeWord(document.getElementById("tutorial-text"), content.text, () => {
-            setTimeout(() => {
-                if (content.target) {
-                    document.getElementById("skip").style.setProperty("display", "none", "important");
-                } else {
-                    document.getElementById("skip").style.setProperty("display", "block", "important");
-                }
-            },1000)
-        })
+        setTimeout(() => {
+            typeWord(document.getElementById("tutorial-text"), content.text, () => {
+                setTimeout(() => {
+                    if (content.target) {
+                        document.getElementById("skip").style.setProperty("display", "none", "important");
+                    } else {
+                        document.getElementById("skip").style.setProperty("display", "block", "important");
+                    }
+                    isTyping = false;
+                    if (document.getElementById("tutorial-title").typingInterval) clearInterval(document.getElementById("tutorial-title").typingInterval);
+                    if (document.getElementById("tutorial-text").typingInterval) clearInterval(document.getElementById("tutorial-text").typingInterval);
+                }, 1000)
+            })
+        }, 500);
     })
 }
 
@@ -1561,6 +1662,7 @@ function typeWord(target, text, onComplete) {
     let i = 0;
     target.innerText = "";
 
+    // const npcSound = new Audio()
     target.typingInterval = setInterval(() => {
         target.innerText += (i == 0 ? "" : " ") + words[i];
         i++;
@@ -1586,7 +1688,10 @@ function getNextStep() {
 function focusTarget() {
 
     currentTarget.forEach(target => {
-        target.style.position = "";
+        if (target.dataset.originalPos) {
+            target.style.position = "";
+            delete target.dataset.originalPos;
+        }
         target.style.zIndex = '';
     });
 
@@ -1594,20 +1699,42 @@ function focusTarget() {
 
     if (!overlay) {
         overlay = document.createElement('div');
-        overlay.style.position = "fixed";
-        overlay.style.inset = "0";
+        overlay.style.position = "absolute";
+        overlay.style.top = "0";
+        overlay.style.left = "0";
+        overlay.style.width = "100%";
+        overlay.style.height = "100%";
         overlay.style.background = "rgba(0,0,0,0.7)";
         overlay.style.zIndex = "9997";
-        overlay.style.pointerEvents = "none";
+        overlay.style.pointerEvents = "auto";
+
         document.body.appendChild(overlay);
     };
 
     overlay.style.setProperty("display", "block", "important");
 
+    document.getElementById("tutorial").style.zIndex = "9999";
+
+    if (!currentTargetId) return;
+
     currentTargetId.forEach(targetId => {
-        const target = document.getElementById(targetId);
-        target.style.position = "relative";
-        target.style.zIndex = "9998";
-        currentTarget.push(target);
-    })
+        const target = document.querySelector(targetId);
+        if (target) {
+            if (window.getComputedStyle(target).position === "static") {
+                target.style.position = "relative";
+                target.dataset.originalPos = "true";
+            }
+            target.style.zIndex = "9998";
+            currentTarget.push(target);
+
+            const parentWindow = target.closest(".window");
+            if(parentWindow && parentWindow !== target){
+                parentWindow.style.zIndex = "9998";
+                currentTarget.push(target);
+            }
+        } else {
+            console.log("cant find it:", targetId);
+        }
+    });
+
 }
