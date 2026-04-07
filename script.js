@@ -19,7 +19,8 @@ setActiveFolder(null);
 
 let trashedFiles = [];
 
-const reserved = ["trash", "Trash", "system", "System", "Guide", "instruction-file", "new", "New", "open"]
+const reserved = ["trash", "Trash", "system", "System", "Guide", "instruction-file", "new", "New", "open"];
+const folderChildFiles = [];
 
 function init() {
     const homeEl = document.querySelector(".home");
@@ -794,7 +795,46 @@ function createWindow(id, name, editable = 'false') {
     windowPane.contentEditable = editable;
 
     div.appendChild(titleDiv);
-    div.appendChild(seperatorDiv);
+
+    if (id.includes('-file')) {
+        div.appendChild(seperatorDiv);
+    }
+
+    if (id.includes("-folder")) {
+        const detailsBar = document.createElement('div');
+        detailsBar.id = id + '-detailsBar';
+        detailsBar.className = "details-bar";
+
+        const inputBox = document.createElement('input');
+        inputBox.id = id + '-createFileField';
+        inputBox.placeholder = 'New File Name';
+        inputBox.height = "10px";
+
+        const createBtn = document.createElement('button');
+        createBtn.className = 'btn';
+        createBtn.innerText = "Create";
+        createBtn.id = id + '-createFileBtn';
+
+        detailsBar.appendChild(inputBox);
+        detailsBar.appendChild(createBtn);
+
+        createBtn.addEventListener("click",(e)=>{
+            const fieldId = createBtn.id.replace("-createFileBtn","-createFileField");
+            const field = document.getElementById(fieldId);
+            const value = field.value.trim();
+
+            if(value){
+                createIcons(`${value}-file-icon`,"assets/icons/hypercard.svg",value);
+                createWindow(`${value}-file`,value,"true");
+            }
+            else{
+                alertBox("Enter some File Name To Proceed.")
+            }
+        })
+
+        div.appendChild(detailsBar);
+    }
+
     div.appendChild(windowPane);
 
     document.querySelector(".after-loading").appendChild(div);
@@ -1165,6 +1205,7 @@ document.getElementById("about-me").addEventListener("click", (e) => {
 });
 
 // for creating new folder structure here in this chunk of code
+
 document.getElementById("new-folder-btn").addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1204,5 +1245,10 @@ document.getElementById("create-folder").addEventListener("click", (e) => {
     createWindow(`${input.value.trim()}-folder`, input.value.trim(), "false");
     document.getElementById("new-folder").style.setProperty("display", "none", "important");
 })
+
+//making the folder icon to able to create files init
+
+
+// making the folder icon to accept files input by dragging
 
 //storing every state that user has opened/created in the os in the lcal storage
