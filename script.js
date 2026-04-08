@@ -19,7 +19,7 @@ setActiveFolder(null);
 
 let trashedFiles = [];
 
-const reserved = ["trash", "Trash", "system", "System", "Guide", "instruction-file", "new", "New", "open"];
+const reserved = ["trash", "Trash", "system", "System", "Guide", "instruction-file", "new", "New", "open", "Player", "player"];
 const folderChildFiles = {};
 
 function init() {
@@ -275,6 +275,9 @@ function init() {
 `;
 
     const demoWin = document.getElementById("instruction-file");
+
+    createMusicPlayer();
+
     // demoWin.style.setProperty("display", "flex", "important");
     // const demoIdx = activeWindows.indexOf("instruction-file");
     // if (demoIdx === -1) activeWindows.push("instruction-file");
@@ -357,7 +360,7 @@ function dragElementWindows(element) {
                     }
                 }
             });
-            if (clickedTargets.length === currentTargetId.length) {
+            if (clickedTargets.length === currentTargetId.length && !isTutorialActive) {
                 document.getElementById("tutorial-title").innerText = "";
                 document.getElementById("tutorial-text").innerText = "";
 
@@ -582,7 +585,7 @@ function createIcons(id, iconSrc, label, child = "false", root = null) {
 
     div.innerHTML = `
     <div>
-        <img src="${iconSrc}" alt ="${label}" width="24" height="24" draggable="false"/>
+        <img src="${iconSrc}" alt ="${label}" width="24" height="24" draggable="false" id="imgIcon"/>
     </div>
     <div>
         <p class="text-sm! w-fit font-normal bg-white text-black">${label}</p>
@@ -619,6 +622,9 @@ function createIcons(id, iconSrc, label, child = "false", root = null) {
             e.stopPropagation();
             document.querySelectorAll(".homeIcons").forEach(icon => icon.style.filter = '');
             div.style.filter = "invert(1)";
+            if (id === "player-folder-icon") {
+                div.querySelector("img").style.filter = ""
+            }
         })
 
         dragElement(div);
@@ -642,6 +648,10 @@ function createIcons(id, iconSrc, label, child = "false", root = null) {
 
             if (winId.includes("-folder")) {
                 refreshFolder(winId);
+            }
+
+            if (winId === "player-folder") {
+                populateMusicPlayer();
             }
 
             const idThere = activeWindows.indexOf(winId);
@@ -889,7 +899,7 @@ function createWindow(id, name, editable = 'false') {
         div.appendChild(seperatorDiv);
     }
 
-    if (id.includes("-folder")) {
+    if (id.includes("-folder") && id !== "player-folder") {
 
         const detailsBar = document.createElement('div');
         detailsBar.id = id + '-detailsBar';
@@ -2187,14 +2197,17 @@ function showContextMenu(x, y, items) {
         display:flex;
         align-items:center;
         gap:8px;
+        color:black;
         `
-        btn.innerHTML = `<span>${items.icon || ""}</span><span>${items.label || ""}</span>`;
+        btn.innerHTML = `<span><img src="${item.icon}" width="10px" height="10px" draggable="false"/></span><span>${item.label || ""}</span>`;
 
         btn.addEventListener("mouseenter", (e) => {
-            btn.style.filter = "invert(1)";
+            btn.style.background = "black";
+            btn.style.color = "white";
         });
         btn.addEventListener("mouseleave", (e) => {
-            btn.style.filter = "";
+            btn.style.background = "white";
+            btn.style.color = "black";
         });
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -2207,16 +2220,115 @@ function showContextMenu(x, y, items) {
     menu.style.setProperty("display", "block", "important");
 
     const scaledX = x / scale;
-    const scaledY = x / scale;
+    const scaledY = y / scale;
 
     const menuH = menu.offsetHeight;
     const menuW = menu.offsetWidth;
 
     menu.style.left = (scaledX + menuW > window.innerWidth / scale ? scaledX - menuW : scaledX) + "px";
-    menu.style.top = (scaledY + menuH > window.innerHeight / scale ? scaledY - menuH : scaledY) + "px";   
+    menu.style.top = (scaledY + menuH > window.innerHeight / scale ? scaledY - menuH : scaledY) + "px";
 }
 
-function hideContextMenu(){
+function hideContextMenu() {
     const menu = document.getElementById("context-menu");
-    if(menu) menu.style.setProperty("display","none","important")
+    if (menu) menu.style.setProperty("display", "none", "important");
 }
+
+document.querySelector(".home").addEventListener("contextmenu", (e) => {
+    if (e.target.closest(".homeIcons")) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    showContextMenu(e.clientX, e.clientY, [
+        { icon: "assets/icons/hypercard.svg", label: "New File", action: () => document.getElementById("new-file-btn").click() },
+        { icon: "assets/icons/floppy-disk-icon.svg", label: "New Folder", action: () => document.getElementById("new-folder-btn").click() },
+        { icon: "assets/icons/hypercard.svg", label: "Open File", action: () => document.getElementById("open").click() }
+    ])
+});
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest("#context-menu")) hideContextMenu();
+}, true);
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" || e.key === "escape" || e.key === "ESCAPE") hideContextMenu();
+})
+
+//sound player icon and playing it here
+
+const tracks = [
+    { name: "You", src: "assets/sounds/bip.mp3" },
+    { name: "you2", src: "assets/sounds/laugh.mp3" }
+]
+
+let currentTrack = null;
+let currentAudio = null;
+let isPlaying = false;
+
+function createMusicPlayer() {
+    createIcons("player-folder-icon", "assets/icons/music.svg", "Player");
+    createWindow("player-folder", "Player", "false");
+
+}
+
+function populateMusicPlayer() {
+    const win = document.getElementById("player-folder");
+    const pane = win.querySelector(".window-pane");
+
+    pane.innerHTML = "";
+
+    tracks.forEach((track, index) => {
+        const musicBox = document.createElement("div");
+        musicBox.style.cssText = `
+        display:flex;
+        align-items:center;
+        gap:6px;
+        padding:3px 6px;
+        cursor:pointer;
+        font-size:11px;
+        `
+        musicBox.innerHTML = `
+        <img src="assets/icons/sound-icon.svg" width="24px" height="24px" draggable="false"/>
+        <span>${track.name}</span>
+        `
+
+        pane.appendChild(musicBox);
+
+        // musicBox.addEventListener("click",(e)=>{
+        //     e.stopPropagation();
+        //     e.preventDefault();
+
+        //     musicBox.style.filter = "invert(1)";
+        // })
+
+        musicBox.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            createIsPlayingWindow(track);
+        })
+    })
+}
+
+function createIsPlayingWindow(track) {
+    console.log(track);
+    let win = document.getElementById("isPlaying-folder");
+    if (win) {
+        // createWindow("isPlaying-folder", track.name, "false");
+        win.remove();
+    }
+
+    createWindow("isPlaying-folder", track.name, "false");
+
+    win = document.getElementById("isPlaying-folder");
+    const pane = win.querySelector(".window-pane");
+
+    bringWindowToTop("isPlaying-folder");
+    win.style.setProperty("display", "block", "important");
+
+}
+
+//add add music btn in the window.
+//make the isPlaying folder play audio.
+//fix tutorail bugs.
+//add a mid level puzzle for the virus.
