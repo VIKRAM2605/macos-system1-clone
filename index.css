@@ -1,12 +1,16 @@
+* {
+    cursor: url('assets/icons/pointer-cursor.svg') 0 0, auto !important;
+}
 body {
     transform-origin: top left;
     transform: scale(1.6);
     width: calc(100vw / 1.6);
     height: calc(100vh / 1.6);
 }
+
 .home {
     position: relative;
-    width:100%;
+    width: 100%;
 }
 
 .homeIcons {

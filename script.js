@@ -290,7 +290,7 @@ function init() {
     //     })
     // })
 
-    startTutorial();
+    // startTutorial();
 
     console.log(files);
 }
@@ -1439,7 +1439,7 @@ const tutorialSteps = [
     {
         title: "Click on File Tab",
         text: "Click on the file tab located at the Tools sections",
-        target:["#file-tab"]
+        target: ["#file-tab"]
     },
     {
         title: "Create New Folder",
@@ -1485,7 +1485,7 @@ let isTyping = false;
 let currentTarget = [];
 let currentTargetId = [];
 let overlay = null;
-let isTutorialActive = false;
+let isTutorialActive = true;
 let clickedTargets = [];
 
 function startTutorial() {
@@ -1507,7 +1507,7 @@ function startTutorial() {
         const matchingId = currentTargetId.filter(id => {
             const isClosest = e.target.closest(id);
             const isInside = e.target.querySelector && e.target.querySelector(id);
-            console.log(isClosest,isInside,id);
+            console.log(isClosest, isInside, id);
             return isClosest || isInside;
         });
 
@@ -1692,6 +1692,10 @@ function getNextStep() {
     if (counter >= tutorialSteps.length) {
         const tutorialBox = document.getElementById("tutorial");
         tutorialBox.style.setProperty("display", "none", "important");
+
+        setTimeout(() => {
+            //call virus here
+        }, 5000)
         return;
     }
     return tutorialSteps[counter++];
@@ -1753,3 +1757,466 @@ function focusTarget() {
 
 // bug noting : When tutorial is playing sometimes the click the New file/folder step gets omitted leading to permanent stall.
 // and also the file tab isnt getting higlighted need to check this out in the morning.
+
+//Needs to add -> sound effect for the mascot, Virus attack after 5 sec of use. Puzzles to make the virus gone.
+//after finishing this needs to add games to it like retro games specifically for system 1.
+//Needs to ship tomorrow so sound effect is needed and a easy puzzle to solve and kill the virus. 
+
+
+const didYouKnow = [
+    {
+        title: "System 1 wasn't called 'mascOS'",
+        text: "System 1 was originally know simply as 'System 1.0' and did not adopt the 'Mac Os' name until the mid-1990s.",
+        target: null
+    },
+    {
+        title: "Sytsem 1 fit on a single 400KB floppy disk",
+        text: "The entire operating system,including its core apps ,was small enough to fit on a single 400KB floppy disk.",
+        target: null
+    },
+    {
+        title: "Folders were an illusion",
+        text: "It used a 'flat' file system where folders were just visual tricks and didn't actually exist as separate directories.",
+        target: null
+    },
+    {
+        title: "No Multitasking",
+        text: "The system could only run one application at a time,requiring you to quit one program before opening another.",
+        target: null
+    },
+    {
+        title: "The 'Happy Mac' was born",
+        text: "The iconic smiling computer face that greeted the users at startup was designed by artist Susan Kare.",
+        target: null
+    },
+    {
+        title: "The original Fonts were named after cities",
+        text: "Steve Jobs insisted on naming the system's typefaces after world-class citites like Chicago, Geneva and Cairo.",
+        target: null
+    },
+    {
+        title: "There was no Shutdown command",
+        text: "The first version had no software shutdown option, so users had to flip a physical power switch to turn it off.",
+        target: null
+    },
+    {
+        title: "The Trash was temporary",
+        text: "Files in the Trash were automatically and permantly deleted every time the computer restarted or a new app was opened.",
+        target: null,
+    },
+    {
+        title: "System 1 had no arrow keys",
+        text: "Steve Jobs intentionally omitted arrow keys from the original keyboard to force users to learn to use the mouse.",
+        target: null
+    },
+    {
+        title: "The 'About' box had a secret",
+        text: "Holiding the option key while selecting 'About The Finder' revealed a hidden silhouette of the mountain in Cupertino.",
+        target: null
+    }
+];
+
+function randomInt(min, max) {
+    const minCeiled = Math.ceil(min);
+    const maxFloored = Math.floor(max);
+
+    return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled);
+}
+
+//Did you know section
+
+let currentDidYouKnowIdx = null;
+let isDialogBoxActive = false;
+let mascotClickedCount = 0;
+let isMascotAngry = false;
+
+const angryMascot = [
+    {
+        title: "Hey, look don't click me."
+    },
+    {
+        title: "Hey, i said don't click me."
+    },
+    {
+        title: "Don't you understand what i said."
+    },
+    {
+        title: "..."
+    },
+    {
+        title: ".."
+    },
+    {
+        title: "."
+    },
+    {
+        title: "Bye!. You don't need facts here i think so."
+    }
+];
+
+//make the dialog box here
+function playDialog(content) {
+    let area = document.getElementById("did-you-know-dialog");
+    if (!area) {
+        area = document.createElement('div');
+        area.id = "did-you-know-dialog";
+        area.style.position = "fixed";
+        area.style.bottom = "0px";
+        area.style.width = "100%";
+        area.style.height = "fit-content";
+        area.style.padding = "20px";
+        area.style.display = "flex";
+        area.style.flexDirection = "row";
+        area.style.gap = "20px";
+        area.style.alignItems = "center";
+        area.style.ZIndex = "9999";
+        area.style.borderTop = "2px solid black";
+        area.style.background = "white";
+
+        const mascot = document.createElement("img");
+        mascot.id = "did-you-know-mascot";
+        mascot.src = "assets/icons/clarus-icon.svg";
+        mascot.style.width = "58px";
+        mascot.style.height = "58px";
+        mascot.className = "border-2 border-black p-2";
+
+        //make the mascot angry when clicked
+        mascot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            isMascotAngry = true;
+            title.innerText = "";
+            text.innerText = "";
+
+            stopAllDialog();
+
+            document.getElementById("did-you-know-okBtn").style.setProperty("display", "none", "important");
+            document.getElementById("did-you-know-nextBtn").style.setProperty("display", "none", "important");
+
+            if (mascotClickedCount >= angryMascot.length - 1) {
+                const content = angryMascot[mascotClickedCount];
+                playAngryMascot(content);
+                setTimeout(() => {
+                    area.style.setProperty("display", "none", "important");
+                    mascotClickedCount = 0;
+                }, 2000)
+            } else {
+                const content = angryMascot[mascotClickedCount++];
+                playAngryMascot(content);
+            }
+        })
+
+        const title = document.createElement('div');
+        title.id = "did-you-know-title";
+
+        const text = document.createElement('div');
+        text.id = "did-you-know-text";
+        text.className = "text-sm!";
+
+        const nextBtn = document.createElement('button');
+        nextBtn.id = "did-you-know-nextBtn";
+        nextBtn.innerText = "Next->";
+        nextBtn.style.color = "grey";
+        // nextBtn.style.setProperty("display", "none", "important");
+
+        const okBtn = document.createElement('button');
+        okBtn.id = "did-you-know-okBtn";
+        okBtn.innerText = "Ok";
+        okBtn.style.color = "grey";
+        // okBtn.style.setProperty("display", "none", "important");
+
+        const buttonBox = document.createElement('div');
+        buttonBox.style.display = "flex";
+        buttonBox.style.gap = "20px";
+
+        buttonBox.appendChild(nextBtn);
+        buttonBox.appendChild(okBtn);
+
+        okBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            title.innerText = "";
+            text.innerText = "";
+
+            if (isMascotAngry) {
+                const content = didYouKnow[nextDialog()];
+                playDialog(content);
+                isMascotAngry = false;
+                mascotClickedCount = 0;
+                return;
+            }
+
+            isDialogBoxActive = false;
+
+            area.style.setProperty("display", "none", "important");
+        })
+
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            title.innerText = "";
+            text.innerText = "";
+
+            playDidYouKnowText(didYouKnow[nextDialog()]);
+        })
+
+        const textBox = document.createElement('div');
+
+        textBox.appendChild(title);
+        textBox.appendChild(text);
+        textBox.appendChild(buttonBox);
+
+        area.appendChild(mascot);
+        area.appendChild(textBox);
+
+        document.getElementById("after-loading").appendChild(area);
+    }
+
+    area.style.setProperty("display", "flex", "important");
+
+    if (!content) return;
+
+    const title = document.getElementById("did-you-know-title");
+    title.innerText = "";
+
+    const text = document.getElementById("did-you-know-text");
+    text.innerText = "";
+
+    playDidYouKnowText(content);
+}
+
+function stopAllDialog() {
+    const title = document.getElementById("did-you-know-title");
+    const text = document.getElementById("did-you-know-text");
+
+    if (title && title.typingInterval) {
+        clearInterval(title.typingInterval);
+        title.typingInterval = null;
+    }
+    if (text && text.typingInterval) {
+        clearInterval(text.typingInterval);
+        text.typingInterval = null;
+    }
+}
+
+function playAngryMascot(content) {
+    const title = document.getElementById("did-you-know-title");
+    typeWord(title, content.title, () => {
+        setTimeout(() => {
+            const currentIndex = angryMascot.indexOf(content);
+
+            if (currentIndex < angryMascot.length - 1) document.getElementById("did-you-know-okBtn").style.setProperty("display", "block", "important");
+            document.getElementById("did-you-know-nextBtn").style.setProperty("display", "none", "important");
+        }, 1000)
+    })
+}
+
+function playDidYouKnowText(content) {
+
+    const title = document.getElementById("did-you-know-title");
+    const text = document.getElementById("did-you-know-text");
+
+    const okBtn = document.getElementById("did-you-know-okBtn");
+    okBtn.style.setProperty("display", "none", "important");
+
+    const nextBtn = document.getElementById("did-you-know-nextBtn");
+    nextBtn.style.setProperty("display", "none", "important");
+
+    typeWord(title, content.title, () => {
+        setTimeout(() => {
+            typeWord(text, content.text, () => {
+                setTimeout(() => {
+                    okBtn.style.setProperty("display", "block", "important");
+                    nextBtn.style.setProperty("display", "block", "important");
+                }, 500)
+            })
+        }, 500)
+    })
+}
+
+function nextDialog() {
+    let randomIdx = randomInt(0, didYouKnow.length - 1);
+
+    if (!currentDidYouKnowIdx) {
+        currentDidYouKnowIdx = randomIdx;
+        return currentDidYouKnowIdx
+    }
+
+    while (randomIdx === currentDidYouKnowIdx) {
+        randomIdx = randomInt(0, didYouKnow.length - 1);
+    }
+
+    currentDidYouKnowIdx = randomIdx;
+
+    return currentDidYouKnowIdx;
+}
+
+document.getElementById("did-you-know").addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    isDialogBoxActive = true;
+
+    playDialog(didYouKnow[nextDialog()])
+})
+
+
+//virus attack
+
+let visualGlitchCount = 0;
+
+function visualGlitch() {
+    if (visualGlitchCount >= 3) {
+        return
+    }
+
+    const glitch = document.createElement('div');
+    glitch.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    pointer-events:none;
+    overflow:hidden;
+    mix-blend-mode:exclusion;
+    `;
+
+    for (let i = 0; i < 12; i++) {
+        const bar = document.createElement('div');
+        const top = randomInt(0, 95);
+        const height = randomInt(1, 14);
+        const offset = randomInt(-60, 60);
+
+        bar.style.cssText = `
+        position:abosulte;
+        top:${top};
+        width:100%;
+        height:${height}px;
+        background : ${randomInt(0, 1) ? "white" : "black"};
+        transform: translateX(${offset}px);
+        opacity:${(Math.random() * 0.6 + 0.3).toFixed(2)};
+        `
+        glitch.appendChild(bar);
+    }
+
+    const channels = ["rgba(255,0,0,0.15)", "rgba(0,255,0,0.1)", "rgba(0,0,255,0.15)"];
+    channels.forEach((color, i) => {
+        const layer = document.createElement('div');
+        layer.style.cssText = `
+        position:absolute;
+        inset:0;
+        background:${color};
+        transform: translate(${randomInt(-8, 8)}px,${randomInt(-4, 4)}px);
+        min-blend-mode:screen;
+        `;
+
+        glitch.appendChild(layer);
+    })
+
+    document.getElementById("after-loading").appendChild(glitch);
+
+    let strobeCount = 0;
+    const strobe = setInterval(() => {
+        document.body.style.filter = strobeCount % 2 === 0 ? "invert(1) contrast(1.4)" : "";
+        strobeCount++;
+        if (strobeCount > 4) {
+            clearInterval(strobe);
+            document.body.style.filter = "";
+        }
+    }, 60);
+
+    setTimeout(() => {
+        glitch.remove();
+        if (visualGlitchCount >= 3) {
+            alertBox("CRITICAL: Virus has taken hold. System unstable.");
+            setTimeout(() => {
+                window.close();
+            }, 3000)
+        } else {
+            alertBox("SYSTEM WARNING: Anomaly detected.");
+        }
+
+    }, 600)
+
+    visualGlitchCount++;
+}
+
+if (!isTutorialActive) {
+    const virusInterval = setInterval(() => {
+        if (visualGlitchCount >= 3) {
+            clearInterval(virusInterval);
+            return;
+        }
+        visualGlitch();
+    }, 5000);
+}
+
+
+function createContextMenu() {
+    let menu = document.getElementById("context-menu");
+    if (menu) return menu;
+
+    menu = document.createElement('div');
+    menu.id = "context-menu";
+    menu.className = "window";
+    menu.style.cssText = `
+    position:fixed;
+    z-index:999999;
+    min-width:160px;
+    display:none;
+    padding:2px;
+    `
+    document.getElementById("after-loading").appendChild(menu);
+    return menu;
+}
+
+function showContextMenu(x, y, items) {
+    let menu = document.getElementById("context-menu");
+    if (!menu) menu = createContextMenu();
+
+    menu.innerHTML = "";
+
+    items.forEach(item => {
+        const btn = document.createElement("div");
+        btn.style.cssText = `
+        padding:4px 12px;
+        cursor: url("assets/icons/finger-pointer-cursor.svg");
+        font-size:11px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        `
+        btn.innerHTML = `<span>${items.icon || ""}</span><span>${items.label || ""}</span>`;
+
+        btn.addEventListener("mouseenter", (e) => {
+            btn.style.filter = "invert(1)";
+        });
+        btn.addEventListener("mouseleave", (e) => {
+            btn.style.filter = "";
+        });
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            hideContextMenu();
+            item.action();
+        })
+        menu.appendChild(btn);
+    });
+
+    menu.style.setProperty("display", "block", "important");
+
+    const scaledX = x / scale;
+    const scaledY = x / scale;
+
+    const menuH = menu.offsetHeight;
+    const menuW = menu.offsetWidth;
+
+    menu.style.left = (scaledX + menuW > window.innerWidth / scale ? scaledX - menuW : scaledX) + "px";
+    menu.style.top = (scaledY + menuH > window.innerHeight / scale ? scaledY - menuH : scaledY) + "px";   
+}
+
+function hideContextMenu(){
+    const menu = document.getElementById("context-menu");
+    if(menu) menu.style.setProperty("display","none","important")
+}
