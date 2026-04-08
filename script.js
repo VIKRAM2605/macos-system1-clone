@@ -293,38 +293,38 @@ function init() {
     //     })
     // })
 
-    // startTutorial();
+    startTutorial();
 
     console.log(files);
 
     //double click on the title bar on win to go full screen resize
-document.querySelectorAll(".title-bar").forEach(bar => {
-    bar.addEventListener("dblclick", (e) => {
-        if (e.target.closest("button")) return;
-        const win = bar.closest(".window");
-        if (!win) return;
-        if(win.id === "about-me-section") return
+    document.querySelectorAll(".title-bar").forEach(bar => {
+        bar.addEventListener("dblclick", (e) => {
+            if (e.target.closest("button")) return;
+            const win = bar.closest(".window");
+            if (!win) return;
+            if (win.id === "about-me-section") return
 
-        if (win.dataset.full === "true") {
-            win.style.width = win.dataset.width;
-            win.style.height = win.dataset.height;
-            win.style.top = win.dataset.top;
-            win.style.left = win.dataset.left;
-            win.dataset.full = "false";
-        } else {
-            win.dataset.width = win.style.width;
-            win.dataset.height = win.style.height;
-            win.dataset.top = win.style.top;
-            win.dataset.left = win.style.left;
-            win.style.width = homeRect.width + 'px';
-            win.style.height = homeRect.height + 'px';
-            win.style.top = homeRect.top + 'px';
-            win.style.left = homeRect.left + 'px';
-            win.dataset.full = "true";
-        }
-        win.style.margin = "0"
+            if (win.dataset.full === "true") {
+                win.style.width = win.dataset.width;
+                win.style.height = win.dataset.height;
+                win.style.top = win.dataset.top;
+                win.style.left = win.dataset.left;
+                win.dataset.full = "false";
+            } else {
+                win.dataset.width = win.style.width;
+                win.dataset.height = win.style.height;
+                win.dataset.top = win.style.top;
+                win.dataset.left = win.style.left;
+                win.style.width = homeRect.width + 'px';
+                win.style.height = homeRect.height + 'px';
+                win.style.top = homeRect.top + 'px';
+                win.style.left = homeRect.left + 'px';
+                win.dataset.full = "true";
+            }
+            win.style.margin = "0"
+        })
     })
-})
 }
 
 function dragElementWindows(element) {
@@ -381,22 +381,22 @@ function dragElementWindows(element) {
         document.onmouseup = null;
         document.onmousemove = null;
 
-        if (isTutorialActive && currentTargetId) {
-            currentTargetId.forEach(id => {
-                if (element.matches(id) || element.querySelector(id)) {
-                    if (!clickedTargets.includes(id)) {
-                        clickedTargets.push(id);
-                    }
-                }
-            });
-            if (clickedTargets.length === currentTargetId.length && !isTutorialActive) {
-                document.getElementById("tutorial-title").innerText = "";
-                document.getElementById("tutorial-text").innerText = "";
+        // if (isTutorialActive && currentTargetId) {
+        //     currentTargetId.forEach(id => {
+        //         if (element.matches(id) || element.querySelector(id)) {
+        //             if (!clickedTargets.includes(id)) {
+        //                 clickedTargets.push(id);
+        //             }
+        //         }
+        //     });
+        //     if (clickedTargets.length >= currentTargetId.length && !isTutorialActive) {
+        //         document.getElementById("tutorial-title").innerText = "";
+        //         document.getElementById("tutorial-text").innerText = "";
 
-                const content = getNextStep();
-                playText(content);
-            }
-        }
+        //         const content = getNextStep();
+        //         playText(content);
+        //     }
+        // }
     }
 };
 
@@ -465,6 +465,10 @@ function dragElement(element) {
         if (overLap && element.id !== "trash-folder-icon" && element.id !== "system-folder-icon") {
             trashFile(element.id);
             document.getElementById("trash-folder").style.setProperty("display", "none", "important");
+
+            if (isTutorialActive && currentTargetId && currentTargetId.includes("#trash-folder-icon")) {
+                advanceStep();
+            }
             return
         } else if (overLap && element.id === "system-folder-icon") {
             alertBox("You Just did rm -rf/.");
@@ -902,7 +906,7 @@ function alertBox(content) {
     alertBox.style.left = (window.innerWidth / scale / 2) - (alertBox.offsetWidth / 2) + 'px';
     alertBox.style.top = (window.innerHeight / scale / 2) - (alertBox.offsetHeight / 2) + 'px';
 
-    alertBox.style.zIndex = '9998';
+    alertBox.style.zIndex = '100001';
 
     alertBox.style.visibility = '';
 }
@@ -1130,16 +1134,16 @@ function createWindow(id, name, editable = 'false') {
         if (div.style.display !== "none") bringWindowToTop(id);
     })
 
-    titleDiv.addEventListener('dblclick',(e)=>{
-        if(e.target.closest("button")) return;
+    titleDiv.addEventListener('dblclick', (e) => {
+        if (e.target.closest("button")) return;
 
-        if(div.dataset.full === "true"){
+        if (div.dataset.full === "true") {
             div.style.width = div.dataset.width;
             div.style.height = div.dataset.height;
             div.style.top = div.dataset.top;
             div.style.left = div.dataset.left;
             div.dataset.full = "false";
-        }else{
+        } else {
             div.dataset.width = div.style.width;
             div.dataset.height = div.style.height;
             div.dataset.top = div.style.top;
@@ -1292,6 +1296,7 @@ document.getElementById("trash-folder-icon").addEventListener("dblclick", (e) =>
     trashedFiles.forEach(file => {
         const item = document.createElement("div");
         item.className = "flex items-center gap-2 cursor-pointer px-1";
+        item.id = file.id;
         item.innerHTML = `
             <img src = "${file.iconSrc}" width = "16" height = "16" />
             <span class="text-sm!">${file.label}</span>
@@ -1548,7 +1553,7 @@ const tutorialSteps = [
     },
     {
         title: "Note",
-        text: "Files You create is editable. Default Files Can not be editted.",
+        text: "Files You create is editable. Default Files Can not be editted. Click on the File to move on to next step.",
         target: ["#instruction-file"]
     },
     {
@@ -1563,7 +1568,7 @@ const tutorialSteps = [
     },
     {
         title: "Click again to revert the size",
-        text: "Click again to make the window height and width back to normal",
+        text: "Click again to make the window height and width back to normal.",
         target: ["#instruction-file .resize"]
     },
     {
@@ -1589,7 +1594,7 @@ const tutorialSteps = [
     {
         title: "Create New File",
         text: "Create a new file by typing a file name in. When entered,click on create to create a file.",
-        target: ["#file-create", "#create"]
+        target: ["#create"]
     },
     {
         title: "Note",
@@ -1602,29 +1607,29 @@ const tutorialSteps = [
         target: ["#file-tab"]
     },
     {
-        title: "Create New Folder",
+        title: "Click on the New Folder",
         text: "Once again it is similar to creating Files. Click on New Folder option under File tab in the header.",
         target: ["#new-folder-btn"]
     },
     {
         title: "Create New Folder",
         text: "Create a new Folder by typing a Folder name in. When entered,click on create to create a folder.",
-        target: ["#folder-create", "#create-folder"]
+        target: ["#create-folder"]
     },
     {
         title: "Delete File/Folder",
         text: "You can delete a File/Folder By dragging it and dropping on top of the trash icon.",
-        target: ["#trash-folder-icon", "#guide-file-icon"]
+        target: ["#trash-folder-icon", "#instruction-file-icon"]
     },
     {
         title: "Double Click On Trash Icon",
         text: "Double click on trash icon to open the trash folder window.",
-        target: ["#trash-folder", "#guide-file-icon"]
+        target: ["#trash-folder-icon"]
     },
     {
         title: "Restore File/Folder",
         text: "Double Click On deleted Files to Restore Them Back.",
-        target: null
+        target: ["#instruction-file-icon"]
     },
     {
         title: "Easter",
@@ -1645,8 +1650,19 @@ let isTyping = false;
 let currentTarget = [];
 let currentTargetId = [];
 let overlay = null;
-let isTutorialActive = true;
+let isTutorialActive = false;
 let clickedTargets = [];
+let playId = 0;
+let isAdvancing = false;
+
+function skipTutorialEntirely() {
+    isTutorialActive = false;
+    const tutorial = document.getElementById("tutorial");
+    tutorial.style.setProperty("display", "none", "important");
+    overlay.style.setProperty("display", "none", "important");
+
+    startVirusSpread();
+}
 
 function startTutorial() {
     isTutorialActive = true;
@@ -1662,14 +1678,21 @@ function startTutorial() {
             return;
         }
 
+        if (e.target.closest(".alert-box")) return;
+
         if (e.target.closest("#tutorial")) return;
+
+        const alertBox = document.querySelector(".alert-box");
+        const isAlertBoxVisible = alertBox && alertBox.style.display === "block";
 
         const matchingId = currentTargetId.filter(id => {
             const isClosest = e.target.closest(id);
-            const isInside = e.target.querySelector && e.target.querySelector(id);
-            console.log(isClosest, isInside, id);
-            return isClosest || isInside;
+            // const isInside = e.target.querySelector && e.target.querySelector(id)
+            console.log(isClosest, id);
+            return isClosest;
         });
+
+        if (isAlertBoxVisible) return;
 
         console.log(matchingId);
 
@@ -1679,19 +1702,36 @@ function startTutorial() {
             return;
         }
 
+        if (matchingId.includes("#create")) {
+            const input = document.getElementById("file-create");
+            if (input) {
+                const value = input.value.trim();
+                const existingFileCheck = files.find(file => file.id === `${value}-file`);
+                if (value === "" || reserved.includes(value) || existingFileCheck) {
+                    return;
+                }
+            }
+        }
+
+        if (matchingId.includes("#create-folder")) {
+            const input = document.getElementById("folder-create");
+            if (input) {
+                const value = input.value.trim();
+                const existingFileCheck = files.find(file => file.id === `${value}-folder`);
+                if (value === "" || reserved.includes(value) || existingFileCheck) {
+                    return;
+                }
+            }
+        }
+
         matchingId.forEach(id => {
             if (!clickedTargets.includes(id)) {
                 clickedTargets.push(id);
             }
         })
 
-        if (clickedTargets.length === currentTargetId.length) {
-            setTimeout(() => {
-                document.getElementById("tutorial-title").innerText = "";
-                document.getElementById("tutorial-text").innerText = "";
-                const content = getNextStep();
-                playText(content);
-            }, 500)
+        if (clickedTargets.length >= currentTargetId.length) {
+            advanceStep();
         }
     }, true);
 
@@ -1703,7 +1743,11 @@ function startTutorial() {
             e.preventDefault();
             return;
         }
+        if (e.target.closest(".alert-box")) return;
         if (e.target.closest("#tutorial")) return;
+
+        const alertBox = document.querySelector(".alert-box");
+        const isAlertBoxVisible = alertBox && alertBox.style.display === "block";
 
         const clickedId = currentTargetId.find(id => e.target.closest(id));
 
@@ -1713,16 +1757,13 @@ function startTutorial() {
             return;
         }
 
+        if (isAlertBoxVisible) return;
+
         if (!clickedTargets.includes(clickedId)) {
             clickedTargets.push(clickedId);
 
-            if (clickedTargets.length === currentTarget.length) {
-                setTimeout(() => {
-                    document.getElementById("tutorial-title").innerText = "";
-                    document.getElementById("tutorial-text").innerText = "";
-                    const content = getNextStep();
-                    playText(content);
-                }, 500)
+            if (clickedTargets.length >= currentTargetId.length) {
+                advanceStep();
             }
         }
     }, true)
@@ -1764,6 +1805,12 @@ function startTutorial() {
     textBox.appendChild(title);
     textBox.appendChild(text);
 
+    const buttonBox = document.createElement('div');
+    buttonBox.style.display = "flex";
+    buttonBox.style.flexDirection = "row";
+    buttonBox.style.gap = "15px";
+    buttonBox.style.marginTop = "5px";
+
     let skipBtn;
     skipBtn = document.createElement('button');
     skipBtn.id = "skip"
@@ -1773,17 +1820,36 @@ function startTutorial() {
     skipBtn.style.color = "grey";
     skipBtn.style.setProperty("display", "none", "important");
 
-    textBox.appendChild(skipBtn);
+    let skipTutorialBtn = document.createElement('button');
+    skipTutorialBtn.id = "skip-all";
+    skipTutorialBtn.innerText = "Skip Tutorial Entirely...";
+    skipTutorialBtn.style.fontSize = "10px";
+    skipTutorialBtn.style.height = "fit-content";
+    skipTutorialBtn.style.color = "grey";
+    skipTutorialBtn.style.setProperty("display", "none", "important");
+
+    buttonBox.appendChild(skipBtn);
+
+    buttonBox.appendChild(skipTutorialBtn);
+
+    textBox.appendChild(buttonBox);
 
     skipBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
-        title.innerText = "";
-        text.innerText = "";
+        if (isTyping) return;
 
-        const data = getNextStep();
-        playText(data);
+        advanceStep();
+    });
+
+    skipTutorialBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (isTyping) return;
+
+        skipTutorialEntirely();
     })
 
     area.appendChild(textBox);
@@ -1797,34 +1863,53 @@ function startTutorial() {
     console.log(title, text, currentTargetId);
 }
 
+function advanceStep() {
+    if (isAdvancing) return;
+    isAdvancing = true;
+    setTimeout(() => {
+        document.getElementById("tutorial-title").innerText = "";
+        document.getElementById("tutorial-text").innerText = "";
+        const content = getNextStep();
+        playText(content);
+        isAdvancing = false;
+    }, 500)
+}
+
 function playText(content) {
     if (!content) return;
 
     currentTargetId = content.target;
     clickedTargets = [];
 
+    const thisPlay = ++playId;
+
     isTyping = true;
 
     focusTarget();
 
     document.getElementById("skip").style.setProperty("display", "none", "important");
+    document.getElementById("skip-all").style.setProperty("display", "none", "important");
 
     typeWord(document.getElementById("tutorial-title"), content.title, () => {
+        if (thisPlay !== playId) return;
         setTimeout(() => {
+            if (thisPlay !== playId) return;
             typeWord(document.getElementById("tutorial-text"), content.text, () => {
+                if (thisPlay !== playId) return;
+                isTyping = false;
                 setTimeout(() => {
+                    if (thisPlay !== playId) return;
                     if (content.target) {
                         document.getElementById("skip").style.setProperty("display", "none", "important");
+                        document.getElementById("skip-all").style.setProperty("display", "block", "important");
                     } else {
                         document.getElementById("skip").style.setProperty("display", "block", "important");
+                        document.getElementById("skip-all").style.setProperty("display", "block", "important");
                     }
-                    isTyping = false;
-                    if (document.getElementById("tutorial-title").typingInterval) clearInterval(document.getElementById("tutorial-title").typingInterval);
-                    if (document.getElementById("tutorial-text").typingInterval) clearInterval(document.getElementById("tutorial-text").typingInterval);
-                }, 1000)
-            })
+                }, 1000);
+            });
         }, 500);
-    })
+    });
 }
 
 function typeWord(target, text, onComplete) {
@@ -1852,9 +1937,10 @@ function getNextStep() {
     if (counter >= tutorialSteps.length) {
         const tutorialBox = document.getElementById("tutorial");
         tutorialBox.style.setProperty("display", "none", "important");
+        overlay.style.setProperty("display", "none", "important");
 
         setTimeout(() => {
-            //call virus here
+            startVirusSpread();
         }, 5000)
         return;
     }
@@ -1906,6 +1992,7 @@ function focusTarget() {
             const parentWindow = target.closest(".window");
             if (parentWindow && parentWindow !== target) {
                 parentWindow.style.zIndex = "9998";
+                parentWindow.style.position = "absolute";
                 currentTarget.push(parentWindow);
             }
         } else {
@@ -2305,7 +2392,7 @@ function visualGlitch() {
     visualGlitchCount++;
 }
 
-if (!isTutorialActive) {
+function startVirusSpread() {
     const virusInterval = setInterval(() => {
         if (visualGlitchCount >= 3) {
             clearInterval(virusInterval);
@@ -2314,7 +2401,6 @@ if (!isTutorialActive) {
         visualGlitch();
     }, 5000);
 }
-
 
 function createContextMenu() {
     let menu = document.getElementById("context-menu");

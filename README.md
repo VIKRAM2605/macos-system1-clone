@@ -28,6 +28,16 @@ Machine looklike. Demo File is provided if you get lost.
 * **Sort by Name:** When a folder is open, navigate to `View -> Sort by Name` to organize its contents in alphabetical order.
 * **Sort by Kind:** When a folder is open, navigate to `View -> Sort by Kind` to group the contents logically (folders first, then files).
 * **Special Portfolio Menu:** Click the `Special` tab in the top menu bar and select my name. This opens a dedicated interactive portfolio containing different sections (About, Projects, Skills, etc.) that you can navigate via buttons.
+* **Music Player:** Opem the default "Player" folder to upload your own local audio files. Double-clicking tracks opens a media player with play/pause controls, a scrubbable progress slider, and duration tracking.
+
+* **Custom Context Menu:** Right-click anywhere on the empty desktop to instantly bring up a retro menu to create new files, new folders, or open existing ones.
+
+* **Keyboard Shortcuts:** Use quick `Ctrl` ot `Cmd` keybinds for common actions (`M` = New File,`F`= New Folder,`O` = Open, `Q` = Close, `E` = Close All, `V` = About Me,`D`= Did You Know).
+
+* **Mac OS Trivia(Did You Know):** Acess retro trivia dialog via the menu bar.(Easter egg : Clicking the masscot in the trivia box repeatedly triggers a secret "anger" response).
+* **Simulated Virus Effect:** A fun visual glitch and "system anomaly" sequence that triggers shortly after completing or skipping the tutorial.
+* **Live Clock & Date:** A real-time clock located in the top menu bar that reveals the full day and date when hovered over with the cursor.
+* **FullScreen Toggle:** Double-click the top navigation bar to easily toggle your browser in and out of full-screen mode.
 
 ## Installation and Setup
 
