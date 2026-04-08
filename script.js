@@ -2525,3 +2525,41 @@ function formatTime(sec) {
 //make the isPlaying folder play audio.
 //fix tutorail bugs.
 //add a mid level puzzle for the virus.
+
+
+//made the ctrl +n and this shortcuts work here
+document.addEventListener('keydown',(e)=>{
+    const isCtrl = e.ctrlKey || e.metaKey;
+    if(!isCtrl) return;
+    
+    switch(e.key.toLowerCase()){
+        case "m":
+            e.preventDefault();
+            document.getElementById("new-file-btn").click();
+            break;
+        case "f":
+            e.preventDefault();
+            document.getElementById("new-folder-btn").click();
+            break;
+        case "o":
+            e.preventDefault();
+            document.getElementById("open").click();
+            break;
+        case "q":
+            e.preventDefault();
+            document.getElementById("close-win").click();
+            break;
+        case "e":
+            e.preventDefault();
+            document.getElementById("close-all-win").click();
+            break;
+        case "v":
+            e.preventDefault();
+            document.getElementById("about-me").click();
+            break;
+        case "d":
+            e.preventDefault();
+            document.getElementById("did-you-know").click();
+            break;
+    }
+})
