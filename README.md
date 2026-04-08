@@ -8,6 +8,8 @@ Machine looklike. Demo File is provided if you get lost.
 
 *(Note: Internet is must as System.CSS and Tailwind.CSS uses api)*
 
+*(Note: Puzzle 1 answer is '4', Puzzle 2 answer is '10', Puzzle 3 answer is 'All option' choose what you like)*
+
 ## Features
 
 * **Boot Animation:** Features a nostalgic loading sequence when you first open the page.

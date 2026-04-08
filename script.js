@@ -935,7 +935,9 @@ function alertBox(content, target = null) {
 function createWindow(id, name, editable = 'false') {
     const div = document.createElement("div");
     div.id = id;
-    div.className = "window fixed w-64 h-48 z-10 flex! flex-col! overflow-hidden!";
+    if (id === "puzzle-folder") div.className = "window fixed w-64 h-64 z-10 flex! flex-col! overflow-hidden!"
+    else div.className = "window fixed w-64 h-48 z-10 flex! flex-col! overflow-hidden!";
+
     div.style.setProperty("display", "none", "important");
     const titleDiv = document.createElement("div");
     titleDiv.className = "title-bar";
@@ -1121,6 +1123,12 @@ function createWindow(id, name, editable = 'false') {
             currentAudio = null;
             isPlaying = false;
         }
+
+        if (id === "puzzle-folder") {
+            if (isSaveFromVirusBtnClicked) {
+                isSaveFromVirusBtnClicked = false;
+            }
+        }
     });
 
     resizeBtn.addEventListener("click", (e) => {
@@ -1270,8 +1278,8 @@ function trashFile(id) {
     icon.remove();
     row--;
     if (row < 0) {
-        row = iconsPerCol;
-        col--;
+        row = iconsPerCol - 1;
+        col = Math.max(0, col - 1);
     }
 
     const icons = document.querySelectorAll(".homeIcons");
@@ -1653,7 +1661,7 @@ const tutorialSteps = [
         target: ["#instruction-file-icon"]
     },
     {
-        title: "Easter",
+        title: "Easter Egg",
         text: "Read the Guide File to Find the Easter.",
         target: null
     },
@@ -1909,7 +1917,7 @@ function playText(content) {
     if (!content) return;
 
     const counterDiv = document.getElementById("tutorial-step-counter");
-    if(counterDiv){
+    if (counterDiv) {
         counterDiv.innerText = `Step ${counter} of ${tutorialSteps.length}`;
     }
 
@@ -2354,14 +2362,12 @@ let visualGlitchCount = 0;
 let isSaveFromVirusBtnClicked = false;
 
 function visualGlitch() {
-    if(isSaveFromVirusBtnClicked){
-        return;
-    }
     if (visualGlitchCount >= 3) {
         return;
     }
 
     const glitch = document.createElement('div');
+    glitch.className = "virus-glitch";
     glitch.style.cssText = `
     position:fixed;
     inset:0;
@@ -2415,46 +2421,209 @@ function visualGlitch() {
         }
     }, 60);
 
-    setTimeout(() => {
-        glitch.remove();
-        if (visualGlitchCount >= 3) {
-            alertBox("CRITICAL: Virus has taken hold. System unstable.");
-            setTimeout(() => {
-                window.close();
-            }, 3000)
-        } else {
-            alertBox(`SYSTEM WARNING: Anomaly detected. attempt (${visualGlitchCount}/3)`, {
-                name: "Save From Virus",
-                onClick: () => {
-                    isSaveFromVirusBtnClicked = true;
-                    document.querySelector(".alert-box").style.setProperty("display","none","important");
-                    puzzle();
-                    console.log("opened",isSaveFromVirusBtnClicked);
-                }
-            });
+    if (!isSaveFromVirusBtnClicked) {
+        setTimeout(() => {
+            glitch.remove();
+            if (visualGlitchCount >= 3) {
+                alertBox("CRITICAL: Virus has taken hold. System unstable.");
+                setTimeout(() => {
+                    window.close();
+                }, 3000)
+            } else {
+                alertBox(`SYSTEM WARNING: Anomaly detected. attempt (${visualGlitchCount}/3)`, {
+                    name: "Save From Virus",
+                    onClick: () => {
+                        isSaveFromVirusBtnClicked = true;
+                        document.querySelector(".alert-box").style.setProperty("display", "none", "important");
+                        puzzle();
+                        console.log("opened", isSaveFromVirusBtnClicked);
+                    }
+                });
+            }
+
+        }, 600)
+    }
+
+    if (!isSaveFromVirusBtnClicked) {
+        visualGlitchCount++;
+    }
+}
+
+const puzzles = [
+    {
+        name: "Puzzle 1",
+        question: "What is 2 + 2?",
+        answer: "4",
+        option: ["2", "4", "3"]
+    },
+    {
+        name: "Puzzle 2",
+        question: "What is 100 / 10?",
+        answer: "10",
+        option: ["1000", "100", "10"]
+    },
+    {
+        name: "puzzle 3",
+        question: "Do you love yourself?",
+        answer: "all",
+        option: ["yes", "no", "maybe"]
+    }
+];
+
+let puzzleCounter = 0;
+let attempt = 3;
+
+function puzzle() {
+    let puzzleDiv = document.getElementById("puzzle-folder");
+    if (!puzzleDiv) {
+        createWindow("puzzle-folder", "AntiVirus", "false");
+        puzzleDiv = document.getElementById("puzzle-folder");
+    }
+
+    puzzleCounter = 0;
+    attempt = 3;
+
+    const content = getPuzzle();
+
+    makePuzzle(content);
+
+    puzzleDiv.style.setProperty("display", "block", "important");
+    bringWindowToTop("puzzle-folder");
+}
+
+function getPuzzle() {
+    return puzzles[puzzleCounter++];
+}
+
+function makePuzzle(content) {
+
+    const win = document.getElementById("puzzle-folder");
+    const pane = win.querySelector(".window-pane");
+
+    if (!pane) return;
+
+    pane.innerHTML = "";
+
+    if (!content) {
+        win.style.setProperty("display", "none", "important");
+        alertBox("Whoo. Just Saved Yourself!");
+        clearVirus();
+        return;
+    }
+
+    const title = document.createElement('div');
+    title.style.fontWeight = "bold";
+    title.innerText = content.name;
+
+    const question = document.createElement('div');
+    question.style.marginTop = "10px";
+    question.style.fontSize = "12px";
+    question.innerText = "Question : " + content.question;
+
+    const choiceBox = document.createElement('div');
+    choiceBox.style.display = "flex";
+    choiceBox.style.flexDirection = "column";
+    choiceBox.style.marginTop = "10px";
+    choiceBox.style.gap = "5px";
+
+    content.option.forEach((option, index) => {
+        const optionBox = document.createElement("div");
+        optionBox.id = index;
+        optionBox.style.display = "flex";
+        optionBox.style.flexDirection = "row";
+        optionBox.style.gap = "5px"
+
+        const radioBtn = document.createElement('input');
+        radioBtn.type = "radio";
+        radioBtn.name = "puzzle-answer";
+        radioBtn.value = option;
+        radioBtn.id = `puzzle-opt-${index}`;
+
+        const value = document.createElement("label");
+        value.innerText = option;
+        value.setAttribute("for", `puzzle-opt-${index}`);
+
+        optionBox.appendChild(radioBtn);
+        optionBox.appendChild(value);
+
+        choiceBox.appendChild(optionBox);
+    });
+
+    const submitBtn = document.createElement('button');
+    submitBtn.innerText = "Submit";
+    submitBtn.className = "btn";
+    submitBtn.style.marginTop = "15px";
+
+    pane.appendChild(title);
+    pane.appendChild(question);
+    pane.appendChild(choiceBox);
+    pane.appendChild(submitBtn);
+
+    submitBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const selected = document.querySelector('input[name="puzzle-answer"]:checked');
+
+        if (!selected) {
+
+            attempt--;
+
+            alertBox(`Please select an option. Virus is killing you!. Chance Left: ${attempt} of 3.`);
+
+            if (attempt <= 0) {
+                document.getElementById("puzzle-folder").style.setProperty("display", "none", "important");
+                isSaveFromVirusBtnClicked = false;
+            }
+
+            return;
         }
 
-    }, 600)
+        const value = selected.value;
 
-    visualGlitchCount++;
+        console.log(value);
+
+        if (value === content.answer || content.answer === "all") {
+            console.log(value, "in")
+            const data = getPuzzle();
+            makePuzzle(data);
+        } else {
+            attempt--;
+            alertBox(`Incorrect! The virus is spreading faster!. Chance Left: ${attempt} of 3.`);
+
+            if (attempt <= 0) {
+                document.getElementById("puzzle-folder").style.setProperty("display", "none", "important");
+                isSaveFromVirusBtnClicked = false;
+            }
+
+            return;
+        }
+    })
+
 }
 
-function puzzle(){
-    createWindow("puzzle-folder","AntiVirus","false");
-    const puzzle = document.getElementById("puzzle-folder");
-    if(!puzzle) return;
-
-    puzzle.style.setProperty("display","block","important");
-}
-
+let virusInterval = null;
 function startVirusSpread() {
-    const virusInterval = setInterval(() => {
+    virusInterval = setInterval(() => {
         if (visualGlitchCount >= 3) {
             clearInterval(virusInterval);
             return;
         }
         visualGlitch();
-    }, 2500);
+    }, 5000);
+}
+
+function clearVirus() {
+    visualGlitchCount = 0;
+    isSaveFromVirusBtnClicked = false;
+    document.body.style.filter = "";
+
+    if(virusInterval){
+        clearInterval(virusInterval);
+        virusInterval = null;
+    }
+
+    document.querySelectorAll('.virus-glitch').forEach(g => g.remove());
 }
 
 function createContextMenu() {
