@@ -884,7 +884,12 @@ function createWindow(id, name, editable = 'false') {
 
     titleDiv.appendChild(closeBtn);
     titleDiv.appendChild(titleH1);
+
     titleDiv.appendChild(resizeBtn);
+
+    if (id === "isPlaying-folder") {
+        resizeBtn.style.visibility = "hidden";
+    }
 
     const seperatorDiv = document.createElement("div");
     seperatorDiv.className = "separator";
@@ -899,7 +904,81 @@ function createWindow(id, name, editable = 'false') {
         div.appendChild(seperatorDiv);
     }
 
-    if (id.includes("-folder") && id !== "player-folder") {
+    if (id === "player-folder") {
+        const fieldBox = document.createElement('div');
+        fieldBox.style.cssText = `
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        gap:3px;
+        width:100%;
+        padding:4px;
+        box-sizing:border-box;
+        border-bottom:1px solid black;
+        `;
+
+        const upload = document.createElement('input');
+        upload.type = "file";
+        upload.accept = "audio/*";
+        upload.style.fontSize = "9px";
+        upload.style.flex = "1";
+        upload.style.minWidth = "0";
+
+        const name = document.createElement("input");
+        name.placeholder = "name:daddy";
+        name.style.flex = "1";
+        name.style.minWidth = "0";
+
+        const okBtn = document.createElement("button");
+        okBtn.className = 'btn'
+        okBtn.innerText = "Create";
+
+        fieldBox.appendChild(name);
+        fieldBox.appendChild(upload);
+        fieldBox.appendChild(okBtn);
+
+        div.appendChild(fieldBox);
+
+        okBtn.addEventListener("click", (e) => {
+            const audio = upload.files[0];
+            if (!audio) {
+                alertBox("Pick a track to add.");
+                return;
+            }
+
+            const nameValue = name.value.trim();
+
+            if (nameValue === "") {
+                alertBox("Give a name Buddy.");
+                return;
+            }
+
+            const nameCheck = tracks.find(t => t.name === nameValue);
+            if (nameCheck) {
+                alertBox("The Name is already used.");
+                name.value = "";
+                return;
+            }
+
+            const audioCheck = tracks.find(t => t.src === audio.name);
+            if (audioCheck) {
+                alertBox("The Audio is already added.");
+                upload.value = "";
+                return;
+            }
+
+            tracks.push({
+                name: nameValue,
+                src: URL.createObjectURL(audio)
+            });
+
+            name.value = "";
+            upload.value = "";
+            refreshAudioPane();
+        })
+    }
+
+    if (id.includes("-folder") && id !== "player-folder" && id !== "isPlaying-folder") {
 
         const detailsBar = document.createElement('div');
         detailsBar.id = id + '-detailsBar';
@@ -969,6 +1048,12 @@ function createWindow(id, name, editable = 'false') {
         if (activeFolder === id) setActiveFolder(null);
         updateDeleteBtn();
         updatePrintBtn();
+
+        if (id === "isPlaying-folder") {
+            currentAudio.pause();
+            currentAudio = null;
+            isPlaying = false;
+        }
     });
 
     resizeBtn.addEventListener("click", (e) => {
@@ -2070,7 +2155,9 @@ document.getElementById("did-you-know").addEventListener("click", (e) => {
 
     isDialogBoxActive = true;
 
-    playDialog(didYouKnow[nextDialog()])
+    playDialog(didYouKnow[nextDialog()]);
+
+    e.target.blur();
 })
 
 
@@ -2284,7 +2371,7 @@ function populateMusicPlayer() {
         align-items:center;
         gap:6px;
         padding:3px 6px;
-        cursor:pointer;
+        cursor:url("assets/icons/finger-point-cursor.svg");
         font-size:11px;
         `
         musicBox.innerHTML = `
@@ -2310,6 +2397,39 @@ function populateMusicPlayer() {
     })
 }
 
+function refreshAudioPane() {
+    const win = document.getElementById("player-folder");
+    const pane = win.querySelector('.window-pane');
+
+    pane.innerHTML = "";
+
+    tracks.forEach((track, index) => {
+        const musicBox = document.createElement('div');
+        musicBox.style.display = "flex";
+        musicBox.style.cssText = `
+        align-items:center;
+        gap:6px;
+        padding:3px 6px;
+        cursor:url("finger-point-cursor.svg");
+        font-size:11px;
+        `;
+
+        musicBox.innerHTML = `
+        <img src="assets/icons/sound-icon.svg" width="24px" height="24px" draggable="false"/>
+        <span>${track.name}</span>
+        `;
+
+        pane.appendChild(musicBox);
+
+        musicBox.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            createIsPlayingWindow(track);
+        })
+    })
+}
+
 function createIsPlayingWindow(track) {
     console.log(track);
     let win = document.getElementById("isPlaying-folder");
@@ -2323,9 +2443,82 @@ function createIsPlayingWindow(track) {
     win = document.getElementById("isPlaying-folder");
     const pane = win.querySelector(".window-pane");
 
+    pane.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:4px;">
+        <input type="range" id="dial" min="0" max="100" value="0" step="0.1" style="width="100%"/>
+        <div style="display:flex; justify-content:space-between; font-size:10px;">
+            <span id="current-duration">0:00</span>
+            <span id="max-duration">0:00</span>
+        </div>
+    </div>
+    <div style="padding-top:20px;">
+        <button class="btn" id="playPause">▶ Play</button>
+    </div>
+    `;
+
     bringWindowToTop("isPlaying-folder");
     win.style.setProperty("display", "block", "important");
 
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+
+    currentAudio = new Audio(track.src);
+    isPlaying = false;
+
+    const stepper = document.getElementById("dial");
+    const currentDuration = document.getElementById("current-duration");
+    const maxDuration = document.getElementById("max-duration");
+    const playBtn = document.getElementById("playPause");
+
+    playBtn.addEventListener("click", (e) => {
+        if (isPlaying) {
+            currentAudio.pause();
+            isPlaying = false;
+            playBtn.innerText = "▶ Play";
+        } else {
+            currentAudio.play();
+            isPlaying = true;
+            playBtn.innerText = "⏸ Pause";
+        }
+    });
+
+    currentAudio.ontimeupdate = () => {
+        if (!stepper.dragging) {
+            stepper.value = (currentAudio.currentTime / currentAudio.duration) * 100 || 0;
+        }
+        currentDuration.textContent = formatTime(currentAudio.currentTime);
+        maxDuration.textContent = formatTime(currentAudio.duration);
+    }
+
+    stepper.addEventListener("mousedown", (e) => {
+        stepper.dragging = true;
+    });
+
+    stepper.addEventListener("mouseup", (e) => {
+        stepper.dragging = false;
+        currentAudio.currentTime = (stepper.value / 100) * currentAudio.duration;
+    });
+
+    stepper.addEventListener("input", (e) => {
+        currentDuration.textContent = formatTime((stepper.value / 100) * (currentAudio.duration || 0));
+    });
+
+    currentAudio.onended = () => {
+        isPlaying = false;
+        playBtn.textContent = "▶ Play";
+        stepper.value = 0;
+    }
+};
+
+function formatTime(sec) {
+    if (!sec || isNaN(sec)) return;
+
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60).toString().padStart(2, "0");
+
+    return `${m}:${s}`;
 }
 
 //add add music btn in the window.

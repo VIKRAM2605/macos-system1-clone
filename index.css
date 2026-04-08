@@ -81,3 +81,7 @@ body::after {
         opacity: 0.1;
     }
 }
+
+input[type="range"]{
+    accent-color: black;
+}

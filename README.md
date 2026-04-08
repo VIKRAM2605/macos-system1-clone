@@ -1,4 +1,4 @@
-# Classic Mac OS (System 1) Web DeskTop/Portfolio
+# Classic Mac OS (System 1) Web DeskTop
 A classsic/ retro based os. This is the System 1 Macintosh layout and icons and some feature represent the real Mactoish layoput and feature and some are implemented by me. Made with HTML,CSS,Tailwind and `system.css`. This project represent a basic Virtual 
 Machine looklike. Demo File is provided if you get lost.
 
