@@ -296,6 +296,35 @@ function init() {
     // startTutorial();
 
     console.log(files);
+
+    //double click on the title bar on win to go full screen resize
+document.querySelectorAll(".title-bar").forEach(bar => {
+    bar.addEventListener("dblclick", (e) => {
+        if (e.target.closest("button")) return;
+        const win = bar.closest(".window");
+        if (!win) return;
+        if(win.id === "about-me-section") return
+
+        if (win.dataset.full === "true") {
+            win.style.width = win.dataset.width;
+            win.style.height = win.dataset.height;
+            win.style.top = win.dataset.top;
+            win.style.left = win.dataset.left;
+            win.dataset.full = "false";
+        } else {
+            win.dataset.width = win.style.width;
+            win.dataset.height = win.style.height;
+            win.dataset.top = win.style.top;
+            win.dataset.left = win.style.left;
+            win.style.width = homeRect.width + 'px';
+            win.style.height = homeRect.height + 'px';
+            win.style.top = homeRect.top + 'px';
+            win.style.left = homeRect.left + 'px';
+            win.dataset.full = "true";
+        }
+        win.style.margin = "0"
+    })
+})
 }
 
 function dragElementWindows(element) {
@@ -474,7 +503,20 @@ function updateTime() {
         hour: '2-digit',
         minute: '2-digit'
     });
+    const date = now.toLocaleDateString('en-US', {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+    })
     document.getElementById("clock").textContent = time;
+
+    document.getElementById("clock").addEventListener("mouseenter", (e) => {
+        document.getElementById("clock-date").textContent = date;
+        document.getElementById("clock-date").style.setProperty("display", "block", "important");
+    })
+    document.getElementById("clock").addEventListener("mouseleave", (e) => {
+        document.getElementById("clock-date").style.setProperty("display", "none", "important");
+    })
 };
 
 updateTime();
@@ -1086,6 +1128,29 @@ function createWindow(id, name, editable = 'false') {
 
     div.addEventListener("click", () => {
         if (div.style.display !== "none") bringWindowToTop(id);
+    })
+
+    titleDiv.addEventListener('dblclick',(e)=>{
+        if(e.target.closest("button")) return;
+
+        if(div.dataset.full === "true"){
+            div.style.width = div.dataset.width;
+            div.style.height = div.dataset.height;
+            div.style.top = div.dataset.top;
+            div.style.left = div.dataset.left;
+            div.dataset.full = "false";
+        }else{
+            div.dataset.width = div.style.width;
+            div.dataset.height = div.style.height;
+            div.dataset.top = div.style.top;
+            div.dataset.left = div.style.left;
+            div.style.width = homeRect.width + 'px';
+            div.style.height = homeRect.height + 'px';
+            div.style.top = homeRect.top + 'px';
+            div.style.left = homeRect.left + 'px';
+            div.dataset.full = "true";
+        }
+        div.style.margin = "0";
     })
 
     div.style.visibility = "hidden";
@@ -2528,11 +2593,11 @@ function formatTime(sec) {
 
 
 //made the ctrl +n and this shortcuts work here
-document.addEventListener('keydown',(e)=>{
+document.addEventListener('keydown', (e) => {
     const isCtrl = e.ctrlKey || e.metaKey;
-    if(!isCtrl) return;
-    
-    switch(e.key.toLowerCase()){
+    if (!isCtrl) return;
+
+    switch (e.key.toLowerCase()) {
         case "m":
             e.preventDefault();
             document.getElementById("new-file-btn").click();
@@ -2561,5 +2626,17 @@ document.addEventListener('keydown',(e)=>{
             e.preventDefault();
             document.getElementById("did-you-know").click();
             break;
+    }
+});
+
+// double click nav to go full screen and back again
+document.querySelector("nav").addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else {
+        document.exitFullscreen();
     }
 })
