@@ -895,7 +895,7 @@ document.getElementById("open-open").addEventListener("click", (e) => {
     }
 });
 
-function alertBox(content) {
+function alertBox(content, target = null) {
     const alertBox = document.querySelector(".alert-box");
     const alertText = alertBox.querySelector(".alert-text");
 
@@ -907,6 +907,27 @@ function alertBox(content) {
     alertBox.style.top = (window.innerHeight / scale / 2) - (alertBox.offsetHeight / 2) + 'px';
 
     alertBox.style.zIndex = '100001';
+
+    const extraDiv = document.getElementById("extra");
+    if (extraDiv) {
+        extraDiv.remove();
+    }
+
+    if (target) {
+        const div = document.createElement("div");
+        div.id = "extra";
+        div.className = 'btn';
+
+        div.innerText = target.name;
+
+        div.addEventListener("click", (e) => {
+            target.onClick();
+        });
+
+        // document.getElementById("alert-box-buttonBox").style.display
+
+        document.getElementById("alert-box-buttonBox").appendChild(div);
+    }
 
     alertBox.style.visibility = '';
 }
@@ -946,7 +967,7 @@ function createWindow(id, name, editable = 'false') {
 
     div.appendChild(titleDiv);
 
-    if (id.includes('-file')) {
+    if (id.includes('-file') || id === "puzzle-folder") {
         div.appendChild(seperatorDiv);
     }
 
@@ -1024,7 +1045,7 @@ function createWindow(id, name, editable = 'false') {
         })
     }
 
-    if (id.includes("-folder") && id !== "player-folder" && id !== "isPlaying-folder") {
+    if (id.includes("-folder") && id !== "player-folder" && id !== "isPlaying-folder" && id !== "puzzle-folder") {
 
         const detailsBar = document.createElement('div');
         detailsBar.id = id + '-detailsBar';
@@ -1794,6 +1815,13 @@ function startTutorial() {
 
     const content = getNextStep();
 
+    const stepCounter = document.createElement("div");
+    stepCounter.id = "tutorial-step-counter";
+    stepCounter.style.fontSize = "10px";
+    stepCounter.style.fontWeight = "bold";
+    stepCounter.style.color = "grey";
+    stepCounter.style.marginBottom = "4px";
+
     const title = document.createElement("div");
     title.id = "tutorial-title"
 
@@ -1802,6 +1830,8 @@ function startTutorial() {
     text.className = "text-sm!"
 
     const textBox = document.createElement("div");
+
+    textBox.appendChild(stepCounter);
     textBox.appendChild(title);
     textBox.appendChild(text);
 
@@ -1877,6 +1907,11 @@ function advanceStep() {
 
 function playText(content) {
     if (!content) return;
+
+    const counterDiv = document.getElementById("tutorial-step-counter");
+    if(counterDiv){
+        counterDiv.innerText = `Step ${counter} of ${tutorialSteps.length}`;
+    }
 
     currentTargetId = content.target;
     clickedTargets = [];
@@ -2316,10 +2351,14 @@ document.getElementById("did-you-know").addEventListener("click", (e) => {
 //virus attack
 
 let visualGlitchCount = 0;
+let isSaveFromVirusBtnClicked = false;
 
 function visualGlitch() {
+    if(isSaveFromVirusBtnClicked){
+        return;
+    }
     if (visualGlitchCount >= 3) {
-        return
+        return;
     }
 
     const glitch = document.createElement('div');
@@ -2384,12 +2423,28 @@ function visualGlitch() {
                 window.close();
             }, 3000)
         } else {
-            alertBox("SYSTEM WARNING: Anomaly detected.");
+            alertBox(`SYSTEM WARNING: Anomaly detected. attempt (${visualGlitchCount}/3)`, {
+                name: "Save From Virus",
+                onClick: () => {
+                    isSaveFromVirusBtnClicked = true;
+                    document.querySelector(".alert-box").style.setProperty("display","none","important");
+                    puzzle();
+                    console.log("opened",isSaveFromVirusBtnClicked);
+                }
+            });
         }
 
     }, 600)
 
     visualGlitchCount++;
+}
+
+function puzzle(){
+    createWindow("puzzle-folder","AntiVirus","false");
+    const puzzle = document.getElementById("puzzle-folder");
+    if(!puzzle) return;
+
+    puzzle.style.setProperty("display","block","important");
 }
 
 function startVirusSpread() {
@@ -2399,7 +2454,7 @@ function startVirusSpread() {
             return;
         }
         visualGlitch();
-    }, 5000);
+    }, 2500);
 }
 
 function createContextMenu() {
@@ -2726,3 +2781,5 @@ document.querySelector("nav").addEventListener('dblclick', (e) => {
         document.exitFullscreen();
     }
 })
+
+//when file is restored it makes the heigth scrollable
